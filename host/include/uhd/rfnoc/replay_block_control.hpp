@@ -95,6 +95,17 @@ namespace uhd { namespace rfnoc {
  *
  * To stop a continuous playback, either call stop(), or issue a stream command
  * with uhd::stream_cmd_t::STREAM_MODE_STOP_CONTINUOUS.
+ *
+ * \section rfnoc_block_replay_actions Action Handling
+ *
+ * If this block receives TX or RX actions (uhd::rfnoc::tx_event_action_info o
+ * uhd::rfnoc::rx_event_action_info), it will store them in a circular buffer.
+ * The API calls get_record_async_metadata() and get_play_async_metadata() can
+ * be used to read them back out asynchronously. To avoid the block controller
+ * continously expanding in memory, the total number of messages that will be
+ * stored is limited. If this block receives more event info objects than it can
+ * store before get_record_async_metadata() or get_play_async_metadata() is
+ * called, the oldest message will be dropped.
  */
 // clang-format on
 class UHD_API replay_block_control : public noc_block_base
@@ -128,6 +139,11 @@ public:
     static const uint32_t REG_PLAY_CMD_ADDR;
     static const uint32_t REG_PLAY_WORDS_PER_PKT_ADDR;
     static const uint32_t REG_PLAY_ITEM_SIZE_ADDR;
+    static const uint32_t REG_REC_POS_LO_ADDR;
+    static const uint32_t REG_REC_POS_HI_ADDR;
+    static const uint32_t REG_PLAY_POS_LO_ADDR;
+    static const uint32_t REG_PLAY_POS_HI_ADDR;
+    static const uint32_t REG_PLAY_CMD_FIFO_SPACE_ADDR;
 
     static const uint32_t PLAY_CMD_STOP;
     static const uint32_t PLAY_CMD_FINITE;
@@ -201,6 +217,7 @@ public:
      *               just once. If set to true, stop() must be called to stop
      *               the play back.
      * \throws uhd::value_error if offset+size exceeds the available memory.
+     * \throws uhd::op_failed Too many play commands are queued.
      */
     virtual void play(const uint64_t offset,
         const uint64_t size,
@@ -259,6 +276,13 @@ public:
      */
     virtual uint64_t get_record_fullness(const size_t port = 0) = 0;
 
+    /*! Get the current record position
+     *
+     * \param port Which output port of the replay block to use
+     * \returns the byte address of the current record position
+     */
+    virtual uint64_t get_record_position(const size_t port = 0) = 0;
+
     /*! Get the current record data type
      *
      * \param port Which input port of the replay block to use
@@ -272,6 +296,22 @@ public:
      * \returns the size of an item in the current record buffer
      */
     virtual size_t get_record_item_size(const size_t port = 0) const = 0;
+
+    /*! Return RX- (input-/record-) related metadata.
+     *
+     * The typical use case for this is when connecting Radio -> Replay for
+     * recording, the radio may produce information like 'overrun occurred'.
+     * When receiving to a host using a uhd::rx_streamer, this information is
+     * returned as part of the uhd::rx_streamer::recv() call, but when the data
+     * is streamed into the replay block, these metadata are stored inside the
+     * replay block until queried by this method.
+     *
+     * \param metadata A metadata object to store the information in.
+     * \param timeout A timeout (in seconds) to wait before returning.
+     * \returns true if a message was available, and was popped into \p metadata.
+     */
+    virtual bool get_record_async_metadata(
+        uhd::rx_metadata_t& metadata, const double timeout = 0.1) = 0;
 
     /**************************************************************************
      * Playback State API calls
@@ -289,6 +329,13 @@ public:
      * \returns size of the playback buffer
      */
     virtual uint64_t get_play_size(const size_t port = 0) const = 0;
+
+    /*! Get the current playback position
+     *
+     * \param port Which output port of the replay block to use
+     * \returns the byte address of the current playback position
+     */
+    virtual uint64_t get_play_position(const size_t port = 0) = 0;
 
     /*! Get the maximum number of items in a packet
      *
@@ -319,6 +366,22 @@ public:
      * \returns the size of an item in the current play buffer
      */
     virtual size_t get_play_item_size(const size_t port = 0) const = 0;
+
+    /*! Return TX- (output-/playback-) related metadata.
+     *
+     * The typical use case for this is when connecting Replay -> Radio for
+     * playback, the radio may produce information like 'underrun occurred'.
+     * When transmitting from a host using a uhd::tx_streamer, this information
+     * is returned as part of the uhd::tx_streamer::recv_async_msg() call, but
+     * when the data is streamed into the replay block, these metadata are
+     * stored inside the replay block until queried by this method.
+     *
+     * \param metadata A metadata object to store the information in.
+     * \param timeout A timeout (in seconds) to wait before returning.
+     * \returns true if a message was available, and was popped into \p metadata.
+     */
+    virtual bool get_play_async_metadata(
+        uhd::async_metadata_t& metadata, const double timeout = 0.1) = 0;
 
     /**************************************************************************
      * Advanced Record Control API calls
@@ -387,7 +450,7 @@ public:
      * Issue stream commands to start or stop playback from the configured playback
      * buffer. Supports
      * STREAM_MODE_START_CONTINUOUS to start continuous repeating playback,
-     * STREAM_MODE_START_NUM_SAMPS_AND_DONE to play the given number of samples once, and
+     * STREAM_MODE_NUM_SAMPS_AND_DONE to play the given number of samples once, and
      * STREAM_MODE_STOP_CONTINUOUS to stop all playback immediately.
      * If a time_spec is supplied, it is placed in the header of the first packet produced
      * for that command. Commands are queued and executed in order. A
@@ -396,6 +459,7 @@ public:
      *
      * \param stream_cmd The command to execute
      * \param port Which output port of the replay block to use
+     * \throws uhd::op_failed Too many commands are queued.
      */
     virtual void issue_stream_cmd(
         const uhd::stream_cmd_t& stream_cmd, const size_t port = 0) = 0;

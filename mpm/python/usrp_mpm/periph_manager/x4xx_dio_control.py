@@ -147,10 +147,7 @@ class DioControl:
     FPGA_DIO_SW_DIO_CONTROL_REGISTER       = FPGA_DIO_REGISTER_BASE + 0x20
 
     FULL_DIO_FPGA_COMPAT = (7, 5)
-
-    # DIO register addresses
-    RADIO_DIO_REGISTER_BASE = 0x8C000
-    RADIO_DIO_CLASSIC_ATR_CONFIG_REGISTER = RADIO_DIO_REGISTER_BASE + 0x40
+    FULL_SPI_FPGA_COMPAT = (7, 7)
 
     # DIO registers addresses in CPLD
     CPLD_DIO_DIRECTION_REGISTER = 0x30
@@ -161,9 +158,10 @@ class DioControl:
     X4XX_GPIO_SRC_MPM      = "MPM"
     X4XX_GPIO_SRC_USER_APP = "USER_APP"
     X4XX_GPIO_SRC_RADIO = [
-        ["DB0_RF0", "DB0_RF1", "DB0_SPI"],
-        ["DB1_RF0", "DB1_RF1", "DB1_SPI"]
+        ["DB0_RF0", "DB0_RF1"],
+        ["DB1_RF0", "DB1_RF1"]
     ]
+    X4XX_GPIO_SPI_SRC_RADIO = [["DB0_SPI"], ["DB1_SPI"]]
     X4XX_GPIO_WIDTH = 12
     # pylint: enable=bad-whitespace
 
@@ -231,6 +229,8 @@ class DioControl:
         self.mboard_cpld = mboard_cpld
         if self.mboard_regs.get_compat_number() < self.FULL_DIO_FPGA_COMPAT:
             self.log.warning("DIO board does not support the full feature set.")
+        if self.mboard_regs.get_compat_number() < self.FULL_SPI_FPGA_COMPAT:
+            self.log.warning("DIO board does not support SPI.")
         # initialize port mapping for HDMI and DIO
         self.port_mappings = {}
         self.mapping = None
@@ -267,6 +267,9 @@ class DioControl:
         ]
         for dboard in dboards:
             gpio_srcs.extend(self.X4XX_GPIO_SRC_RADIO[dboard.slot_idx])
+            # Only add SPI if FPGA version is high enough
+            if self.mboard_regs.get_compat_number() >= self.FULL_SPI_FPGA_COMPAT:
+                gpio_srcs.extend(self.X4XX_GPIO_SPI_SRC_RADIO[dboard.slot_idx])
 
         self._gpio_srcs = {
             gpio_bank : gpio_srcs for gpio_bank in self.X4XX_GPIO_BANKS
@@ -555,8 +558,6 @@ class DioControl:
             self, bank, self.FPGA_DIO_INTERFACE_DIO_SELECT_REGISTER)
         override_reg = self._GpioReg(self, bank, self.FPGA_DIO_OVERRIDE_REGISTER)
         sw_control_reg = self._GpioReg(self, bank, self.FPGA_DIO_SW_DIO_CONTROL_REGISTER)
-        classic_atr_config_reg = self._GpioReg(
-            self, bank, self.RADIO_DIO_CLASSIC_ATR_CONFIG_REGISTER)
 
         def get_gpio_src_i(gpio_pin_index):
             """
@@ -568,8 +569,8 @@ class DioControl:
                     return f"DB{db}_SPI"
                 else:
                     db = int(radio_source_reg.get_pin(gpio_pin_index))
-                    ch = int(classic_atr_config_reg.get_pin(gpio_pin_index))
-                    return f"DB{db}_RF{ch}"
+                    # Note that we can't distinguish between RF0 and RF1
+                    return f"DB{db}_RF0"
             else:
                 if master_reg.get_pin(gpio_pin_index):
                     if sw_control_reg.get_pin(gpio_pin_index):
@@ -625,8 +626,6 @@ class DioControl:
             self, bank, self.FPGA_DIO_INTERFACE_DIO_SELECT_REGISTER)
         override_reg = self._GpioReg(self, bank, self.FPGA_DIO_OVERRIDE_REGISTER)
         sw_control_reg = self._GpioReg(self, bank, self.FPGA_DIO_SW_DIO_CONTROL_REGISTER)
-        classic_atr_config_reg = self._GpioReg(
-            self, bank, self.RADIO_DIO_CLASSIC_ATR_CONFIG_REGISTER)
 
         for pin_index, src_name in enumerate(src):
             pin_index = self._map_to_register_bit(
@@ -646,7 +645,6 @@ class DioControl:
                     channel = int(src_name[6])
                     override_reg.set_pin(pin_index, 0)
                     radio_source_reg.set_pin(pin_index, slot)
-                    classic_atr_config_reg.set_pin(pin_index, channel)
             else:
                 source_reg.set_pin(pin_index, 0)
                 if src_name in (self.X4XX_GPIO_SRC_PS, self.X4XX_GPIO_SRC_MPM):
@@ -662,7 +660,6 @@ class DioControl:
         interface_select_reg.save()
         override_reg.save()
         sw_control_reg.save()
-        classic_atr_config_reg.save()
 
     # --------------------------------------------------------------------------
     # Public API
@@ -905,10 +902,10 @@ class DioControl:
         :return: board status
         """
         result = "\n" \
-               + self._format_row(["%s mapping" % self.mapping.name, self.DIO_PORTS[0], self.DIO_PORTS[1]]) \
-               + self._format_row(["", "", ""], "-", "+") \
-               + self._format_row(["voltage"] + self._get_voltage()) \
-               + self._format_row(["", "", ""], "-", "+")
+            + self._format_row(["%s mapping" % self.mapping.name, self.DIO_PORTS[0], self.DIO_PORTS[1]]) \
+            + self._format_row(["", "", ""], "-", "+") \
+            + self._format_row(["voltage"] + self._get_voltage()) \
+            + self._format_row(["", "", ""], "-", "+")
 
         register = self.mboard_regs.peek32(self.FPGA_DIO_MASTER_REGISTER)
         result += self._format_row(["master"] + self._format_registers(register))

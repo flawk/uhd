@@ -5,7 +5,7 @@
 \section x4xx_feature_list Comparative Features List
 
 - Hardware Capabilities:
-  - Dual QSFP28 Ports (can be used with 10 GigE)
+  - Dual QSFP28 Ports (can be used with 10 GigE or 100 GigE)
   - External PPS input & output
   - External 10 MHz input
   - Internal GPSDO for timing, location, and time/frequency reference
@@ -418,8 +418,8 @@ Of course, you can also connect to the IP address directly if you know it (or
 set it manually using the serial console).
 
 Note: The device's hostname is derived from its serial number by default
-(`ni-x4xx-$SERIAL`). You can change the hostname by modifying the `/etc/hostname`
-file and rebooting.
+(`ni-x4xx-$SERIAL`). You can change the hostname by creating the file
+`/data/network/hostname`, saving the desired hostname in it, then rebooting.
 
 On Microsoft Windows, the connection can be established using a tool such as
 PuTTY, by selecting a username of root without password.
@@ -472,6 +472,20 @@ As of UHD 4.2, the following images flavors are shipped with UHD:
 |-------------------|-----------|-------------------------|-------------------------|---------|--------------------|
 | X4_200            | 200 MHz   | 4x 10 GbE (All Lanes)   | N/C                     | Yes     | Yes (4-Ch Replay)  |
 | CG_400            | 400 MHz   | 100 GbE                 | 100 GbE                 | No      | No                 |
+
+The following list shows some potential use-cases for different FPGA images:
+
+- `X4_200`: 200 MHz analog bandwidth, or below (using RFNoC DDC/DUCs),
+  streaming between the X410 and an external host computer, or streaming
+  to/from on-board DRAM using the RFNoC Record/Replay block.
+- `CG_400`: Full-rate (400 MHz analog bandwidth) streaming between the X410 and
+  an external host computer. The current implementation requires dual 100 GbE
+  connections for 4 full-duplex channels or a single 100 GbE connection for 2
+  full-duplex channels.
+- `X4_400`: Full-rate (400 MHz analog bandwidth) streaming to/from on-board
+  DRAM using the RFNoC Record/Replay block. Up to 4 x 10 GbE connections may be
+  used to access the DRAM from an external host computer. Note that 10 GbE is
+  not fast enough for continuous full-rate streaming at this rate.
 
 Run `make help` in the `fpga/usrp3/top/x400` directory of the UHD repository to
 see a complete list of FPGA images that can be built, some of which are
@@ -813,7 +827,7 @@ For a list of which arguments can be passed into make(), see Section
 -----------------------|---------------------------------------------------------------------------------|---------------------
  addr                  | IPv4 address of primary SFP+ port to connect to.                                | addr=192.168.30.2
  second_addr           | IPv4 address of secondary SFP+ port to connect to.                              | second_addr=192.168.40.2
- mgmt_addr             | IPv4 address or hostname to which to connect the RPC client. Defaults to `addr'.| mgmt_addr=ni-sulfur-311FE00
+ mgmt_addr             | IPv4 address or hostname to which to connect the RPC client. Defaults to `addr'.| mgmt_addr=ni-x4xx-311FE00
  find_all              | When using broadcast, find all devices, even if unreachable via CHDR.           | find_all=1
  master_clock_rate     | Master Clock Rate in Hz.                                                        | master_clock_rate=250e6
  serialize_init        | Force serial initialization of motherboards (default is parallel)               | serialize_init=1
@@ -856,7 +870,7 @@ GPS lock is reported.
 \subsection x4xx_usage_gpio Front-Panel Programmable GPIOs
 
 The USRP X410 has two HDMI front-panel connectors, which are connected to the
-FPGA. For a description of the GPIO control API, see \ref x4x0gpio_fpanel.
+FPGA. For a description of the GPIO control API, see \subpage page_x400_gpio_api.
 
 There are multiple sources that can control the state of the GPIO lines.
 UHD has the capability of controlling which source each pin is driven from.
@@ -1194,10 +1208,6 @@ Block diagram:
 Note that this section does not cover every single clock signal present on the
 X410, but mainly those clock signals relevant for the operation of the RF
 components. Refer to the schematic for more details.
-
-\section x4xx_gpio GPIO
-
-See \subpage page_x400_gpio_api
 
 */
 // vim:ft=doxygen:
