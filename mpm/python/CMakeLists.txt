@@ -104,8 +104,7 @@ if(NOT DEFINED USRP_MPM_PYTHON_DIR)
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
         "import os,sysconfig;\
         platlib = sysconfig.get_path(name='platlib');\
-        prefix = sysconfig.get_config_var('prefix');\
-        print(os.path.relpath(platlib, prefix));"
+        print(os.path.relpath(platlib, \"${CMAKE_INSTALL_PREFIX}\"));"
         OUTPUT_VARIABLE USRP_MPM_PYTHON_DIR OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 endif(NOT DEFINED USRP_MPM_PYTHON_DIR)
