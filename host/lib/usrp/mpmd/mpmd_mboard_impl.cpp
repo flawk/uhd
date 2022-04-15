@@ -305,7 +305,7 @@ mpmd_mboard_impl::mpmd_mboard_impl(
         this->dboard_info.push_back(this_db_info);
     }
 
-    if (!mb_args.has_key("skip_init")) {
+    if (!mb_args.cast<bool>("skip_init", false)) {
         // Initialize mb_iface and mb_controller
         mb_iface = std::make_unique<mpmd_mb_iface>(mb_args, rpc);
         mb_ctrl  = std::make_shared<rfnoc::mpmd_mb_controller>(std::make_shared<uhd::usrp::mpmd_rpc>(rpc), device_info);

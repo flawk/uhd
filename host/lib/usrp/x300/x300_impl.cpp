@@ -215,7 +215,7 @@ x300_impl::x300_impl(const uhd::device_addr_t& dev_addr) : rfnoc_device()
     _mb.resize(device_args.size());
 
     // Serialize the initialization process
-    if (dev_addr.has_key("serialize_init") or device_args.size() == 1) {
+    if (dev_addr.cast<bool>("serialize_init", false) or device_args.size() == 1) {
         for (size_t i = 0; i < device_args.size(); i++) {
             this->setup_mb(i, device_args[i]);
         }

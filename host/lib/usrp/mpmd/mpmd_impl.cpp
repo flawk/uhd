@@ -157,8 +157,8 @@ mpmd_impl::mpmd_impl(const device_addr_t& device_args)
     }
     const size_t num_mboards = mb_args.size();
     _mb.reserve(num_mboards);
-    const bool serialize_init = device_args.has_key("serialize_init");
-    const bool skip_init      = device_args.has_key("skip_init");
+    const bool serialize_init = device_args.cast<bool>("serialize_init", false);
+    const bool skip_init      = device_args.cast<bool>("skip_init", false);
     UHD_LOGGER_INFO("MPMD") << "Initializing " << num_mboards << " device(s) "
                             << (serialize_init ? "serially " : "in parallel ")
                             << "with args: " << device_args.to_string();
