@@ -28,7 +28,7 @@ public:
         , _self_cal_adc_delay("self_cal_adc_delay", false)
         , _ext_adc_self_test("ext_adc_self_test", false)
         , _ext_adc_self_test_duration(
-              "ext_adc_self_test", DEFAULT_EXT_ADC_SELF_TEST_DURATION)
+              "ext_adc_self_test_duration", DEFAULT_EXT_ADC_SELF_TEST_DURATION)
         , _recover_mb_eeprom("recover_mb_eeprom", false)
         , _ignore_cal_file("ignore_cal_file", false)
         , _niusrprio_rpc_port("niusrprio_rpc_port", NIUSRPRIO_DEFAULT_RPC_PORT)
