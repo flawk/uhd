@@ -30,7 +30,7 @@ and possible more options.
  dboard_clock_rate   | Daughterboard clock rate in Hz                                               | X3x0               | dboard_clock_rate=50e6
  system_ref_rate     | Frequency of external reference                                              | X3x0               | system_ref_rate=11.52e6
  mcr                 | Override master clock rate settings (see \ref usrp1_hw_extclk)               | USRP1              | mcr=52e6
- niusrprpc_port      | RPC Port for NI USRP RIO                                                     | X3x0               | niusrprpc_port=5445
+ niusrprio_rpc_port  | RPC Port for NI USRP RIO                                                     | X3x0               | niusrprpc_port=5445
  system_ref_rate     | Reference Clock Rate in Hz                                                   | X3x0               | system_ref_rate=10e6
  self_cal_adc_delay  | Run ADC transfer delay self-calibration.                                     | X3x0               | self_cal_adc_delay=1
  ext_adc_self_test   | Run an extended ADC self test (more than the usual)                          | X3x0               | ext_adc_self_test=1
