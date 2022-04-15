@@ -42,6 +42,112 @@ namespace uhd{
         /* NOP */
     }
 
+    /*template <typename Key, typename Val>
+    dict<Key, Val>::dict(const std::map<Key, Val>& v) : _map(v.begin(), v.end())
+    {
+        // NOP
+    }*/
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>::dict(std::map<Key, Val>&& v) : _map(std::make_move_iterator(v.begin()), std::make_move_iterator(v.end()))
+    {
+        // NOP
+    }*/
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>& dict<Key, Val>::operator=(const std::map<Key, Val>& rhs)
+    {
+        _map.clear();
+        _map.insert(_map.end(), rhs.begin(), rhs.end());
+        return *this;
+    }*/
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>& dict<Key, Val>::operator=(std::map<Key, Val>&& rhs)
+    {
+        _map.clear();
+        _map.insert(_map.end(),
+            std::make_move_iterator(rhs.begin()),
+            std::make_move_iterator(rhs.end()));
+        return *this;
+    }*/
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>::dict(const std::unordered_map<Key, Val>& v) : _map(v.begin(), v.end())
+    {
+        // NOP
+    }*/
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>::dict(std::unordered_map<Key, Val>&& v) : _map(std::make_move_iterator(v.begin()), std::make_move_iterator(v.end()))
+    {
+        // NOP
+    }*/
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>& dict<Key, Val>::operator=(const std::unordered_map<Key, Val>& rhs)
+    {
+        _map.clear();
+        _map.insert(_map.end(), rhs.begin(), rhs.end());
+        return *this;
+    }*/
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>& dict<Key, Val>::operator=(std::unordered_map<Key, Val>&& rhs)
+    {
+        _map.clear();
+        _map.insert(_map.end(),
+            std::make_move_iterator(rhs.begin()),
+            std::make_move_iterator(rhs.end()));
+        return *this;
+    }*/
+
+    template <typename Key, typename Val>
+    template <typename InputIterator>
+    void dict<Key, Val>::emplace(InputIterator first, InputIterator last)
+    {
+        _map.emplace(_map.end(), first, last);
+    }
+
+    template <typename Key, typename Val>
+    template <typename InputIterator>
+    void dict<Key, Val>::insert(InputIterator first, InputIterator last)
+    {
+        _map.insert(_map.end(), first, last);
+    }
+
+    template <typename Key, typename Val>
+    typename std::list<std::pair<Key, Val>>::iterator dict<Key, Val>::begin() noexcept
+    {
+        return _map.begin();
+    }
+
+    template <typename Key, typename Val>
+    typename std::list<std::pair<Key, Val>>::const_iterator
+    dict<Key, Val>::begin() const noexcept
+    {
+        return _map.begin();
+    }
+
+    template <typename Key, typename Val>
+    typename std::list<std::pair<Key, Val>>::iterator dict<Key, Val>::end() noexcept
+    {
+        return _map.end();
+    }
+
+    template <typename Key, typename Val>
+    typename std::list<std::pair<Key, Val>>::const_iterator
+    dict<Key, Val>::end() const noexcept
+    {
+        return _map.end();
+    }
+
+    template <typename Key, typename Val>
+    void dict<Key, Val>::clear(void)
+    {
+        _map.clear();
+    }
+
     template <typename Key, typename Val>
     std::size_t dict<Key, Val>::size(void) const{
         return _map.size();
@@ -159,11 +265,29 @@ namespace uhd{
     template <typename Key, typename Val>
     dict<Key, Val>::operator std::map<Key, Val>() const
     {
-        std::map<Key, Val> new_map;
-        for (const pair_t& p : _map) {
-            new_map[p.first] = p.second;
-        }
-        return new_map;
+        return {_map.begin(), _map.end()};
     }
 
-} //namespace uhd
+    /*template <typename Key, typename Val>
+    dict<Key, Val>::operator std::map<Key, Val>&&() &&
+    {
+        return {std::make_move_iterator(_map.begin()),
+            std::make_move_iterator(_map.end()),
+            _map.size()};
+    }*/
+
+    template <typename Key, typename Val>
+    dict<Key, Val>::operator std::unordered_map<Key, Val>() const
+    {
+        return {_map.begin(), _map.end(), _map.size()};
+    }
+
+    /*template <typename Key, typename Val>
+    dict<Key, Val>::operator std::unordered_map<Key, Val>&&() &&
+    {
+        return {std::make_move_iterator(_map.begin()),
+            std::make_move_iterator(_map.end()),
+            _map.size()};
+    }*/
+
+    } //namespace uhd

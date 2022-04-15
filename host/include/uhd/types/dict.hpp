@@ -10,6 +10,7 @@
 #include <uhd/config.hpp>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace uhd {
@@ -34,6 +35,61 @@ public:
      */
     template <typename InputIterator>
     dict(InputIterator first, InputIterator last);
+
+    //! Copy constructor from a std::map<Key, Val>
+    //dict(const std::map<Key, Val>&);
+
+    //! Move constructor from a std::map<Key, Val>
+    //dict(std::map<Key, Val>&&);
+
+    //! Assignment operator (=) from a std::map<Key, Val>
+    //dict& operator=(const std::map<Key, Val>&);
+
+    //! Move assignment operator (=) from a std::map<Key, Val>
+    //dict& operator=(std::map<Key, Val>&&);
+
+    //! Copy constructor from a std::map<Key, Val>
+    //dict(const std::unordered_map<Key, Val>&);
+
+    //! Move constructor from a std::map<Key, Val>
+    //dict(std::unordered_map<Key, Val>&&);
+
+    //! Assignment operator (=) from a std::unordered_map<Key, Val>
+    //dict& operator=(const std::unordered_map<Key, Val>&);
+
+    //! Move assignment operator (=) from a std::unordered_map<Key, Val>
+    //dict& operator=(std::unordered_map<Key, Val>&&);
+
+    /*!
+     * Input iterator emplace
+     * \param first the begin iterator
+     * \param last the end iterator
+     */
+    template <typename InputIterator>
+    void emplace(InputIterator first, InputIterator last);
+
+    /*!
+     * Input iterator insert
+     * \param first the begin iterator
+     * \param last the end iterator
+     */
+    template <typename InputIterator>
+    void insert(InputIterator first, InputIterator last);
+
+    //! Begin iterator
+    typename std::list<std::pair<Key, Val>>::iterator begin() noexcept;
+
+    //! Begin const iterator
+    typename std::list<std::pair<Key, Val>>::const_iterator begin() const noexcept;
+
+    //! End iterator
+    typename std::list<std::pair<Key, Val>>::iterator end() noexcept;
+
+    //! End const iterator
+    typename std::list<std::pair<Key, Val>>::const_iterator end() const noexcept;
+
+    //! Clears this dict
+    void clear(void);
 
     /*!
      * Get the number of elements in this dict.
@@ -140,9 +196,17 @@ public:
      */
     void update(const dict<Key, Val>& new_dict, bool fail_on_conflict = true);
 
-    /*! Typecast operator to std::map<>
-     */
+    //! Typecast operator to std::map<>
     operator std::map<Key, Val>() const;
+
+    //! Typecast move operator to std::map<>
+    //operator std::map<Key, Val>&&() &&;
+
+    //! Typecast operator to std::unordered_map<>
+    operator std::unordered_map<Key, Val>() const;
+
+    //! Typecast move operator to std::unordered_map<>
+    //operator std::unordered_map<Key, Val>&&() &&;
 
 private:
     typedef std::pair<Key, Val> pair_t;
