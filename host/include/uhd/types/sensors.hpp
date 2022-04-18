@@ -10,6 +10,7 @@
 #include <uhd/config.hpp>
 #include <map>
 #include <string>
+#include <stdexcept>
 
 namespace uhd {
 
@@ -131,11 +132,47 @@ struct UHD_API sensor_value_t
         return value;
     }
 
+    //! Returns the value string
+    constexpr data_type_t get_type(void)
+    {
+        return type;
+    }
+
     //! Convert this sensor value into a printable string
     std::string to_pp_string(void) const;
 
     //! Assignment operator for sensor value
     sensor_value_t& operator=(const sensor_value_t& value);
+
+
+    constexpr operator const std::string&() {
+        if (type != STRING) {
+            throw std::runtime_error("type is not STRING");
+        }
+        return value;
+    }
+
+    constexpr operator bool() {
+        if (type != BOOLEAN) {
+            throw std::runtime_error("type is not BOOLEAN");
+        }
+        return to_bool();
+    }
+
+    constexpr operator int() {
+        if (type != INTEGER) {
+            throw std::runtime_error("type is not INTEGER");
+        }
+        return to_int();
+    }
+
+    constexpr operator double() {
+        if (type != REALNUM) {
+            throw std::runtime_error("type is not REALNUM");
+        }
+        return to_real();
+    }
+
 
     constexpr bool operator==(const std::string& v)
     {
