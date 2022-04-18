@@ -48,7 +48,7 @@ uhd_error uhd_subdev_spec_size(uhd_subdev_spec_handle h, size_t* size_out)
 uhd_error uhd_subdev_spec_push_back(uhd_subdev_spec_handle h, const char* markup)
 {
     UHD_SAFE_C_SAVE_ERROR(
-        h, h->subdev_spec_cpp.push_back(uhd::usrp::subdev_spec_pair_t(markup));)
+        h, h->subdev_spec_cpp.push_back(uhd::usrp::subdev_spec_pair_t::from_markup(markup));)
 }
 
 uhd_error uhd_subdev_spec_at(

@@ -32,11 +32,24 @@ struct UHD_API subdev_spec_pair_t : boost::equality_comparable<subdev_spec_pair_
      */
     subdev_spec_pair_t(const std::string& db_name = "", const std::string& sd_name = "");
 
+    /*!
+     * Create a new subdevice specification pair from a markup string.
+     * \param pair the markup string, e.g. "A:0"
+     */
+    static subdev_spec_pair_t from_markup(const std::string& pair);
+
     //! overloaded equality operator
     bool operator==(const subdev_spec_pair_t& other);
 
     //! overloaded inquality operator
     bool operator!=(const subdev_spec_pair_t& other);
+
+    /*!
+     * Convert the subdevice specification pair into a string
+     * If db_name is empty, simply returns sd_name
+     * \return string of value: (db_name + ":" + sd_name) OR sd_name if db_name is empty
+     */
+    std::string to_string(void) const;
 };
 
 //! overloaded comparison operator for subdev_spec_pair_t

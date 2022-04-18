@@ -26,6 +26,20 @@ subdev_spec_pair_t::subdev_spec_pair_t(
     /* NOP */
 }
 
+subdev_spec_pair_t subdev_spec_pair_t::from_markup(const std::string& pair)
+{
+    std::vector<std::string> db_sd;
+    boost::split(db_sd, pair, boost::is_any_of(":"));
+    switch (db_sd.size()) {
+        case 1:
+            return subdev_spec_pair_t("", db_sd.front());
+        case 2:
+            return subdev_spec_pair_t(db_sd.front(), db_sd.back());
+        default:
+            throw uhd::value_error("invalid subdev-spec-pair markup string: " + pair);
+    }
+}
+
 bool usrp::operator==(const subdev_spec_pair_t& lhs, const subdev_spec_pair_t& rhs)
 {
     return (lhs.db_name == rhs.db_name) and (lhs.sd_name == rhs.sd_name);
@@ -39,6 +53,11 @@ bool subdev_spec_pair_t::operator==(const subdev_spec_pair_t& other)
 bool subdev_spec_pair_t::operator!=(const subdev_spec_pair_t& other)
 {
     return (other.db_name != db_name) or (other.sd_name != sd_name);
+}
+
+std::string subdev_spec_pair_t::to_string(void) const
+{
+    return db_name.empty() ? sd_name : db_name + ":" + sd_name;
 }
 
 subdev_spec_t::subdev_spec_t(const std::string& markup)
