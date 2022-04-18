@@ -125,11 +125,70 @@ struct UHD_API sensor_value_t
     //! The data type of the value
     data_type_t type;
 
+    //! Returns the value string
+    constexpr std::string& to_string(void)
+    {
+        return value;
+    }
+
     //! Convert this sensor value into a printable string
     std::string to_pp_string(void) const;
 
     //! Assignment operator for sensor value
     sensor_value_t& operator=(const sensor_value_t& value);
+
+    constexpr bool operator==(const std::string& v)
+    {
+        return type == STRING && value == v;
+    }
+    constexpr bool operator==(const bool& v)
+    {
+        return type == BOOLEAN && to_bool() == v;
+    }
+    constexpr bool operator==(const int& v)
+    {
+        return type == INTEGER && to_int() == v;
+    }
+    constexpr bool operator==(const double& v)
+    {
+        return type == REALNUM && to_real() == v;
+    }
+
+    constexpr bool operator!=(const std::string& v)
+    {
+        return type != STRING || value != v;
+    }
+    constexpr bool operator!=(const bool& v)
+    {
+        return type != BOOLEAN || to_bool() != v;
+    }
+    constexpr bool operator!=(const int& v)
+    {
+        return type != INTEGER || to_int() != v;
+    }
+    constexpr bool operator!=(const double& v)
+    {
+        return type != REALNUM || to_real() != v;
+    }
+
+#if __cplusplus > 201703L
+    constexpr auto operator<=>(const std::string& v)
+    {
+        return type == STRING ? value <=> v : std::strong_ordering::greater;
+    }
+    constexpr auto operator<=>(const bool& v)
+    {
+        return type == BOOLEAN ? to_bool() <=> v : std::strong_ordering::greater;
+    }
+    constexpr auto operator<=>(const int& v)
+    {
+        return type == INTEGER ? to_int() <=> v : std::strong_ordering::greater;
+    }
+    constexpr auto operator<=>(const double& v)
+    {
+        return type == REALNUM ? to_real() <=> v : std::partial_ordering::greater;
+    }
+#endif
 };
 
 } // namespace uhd
