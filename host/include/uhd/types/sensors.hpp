@@ -8,9 +8,9 @@
 #pragma once
 
 #include <uhd/config.hpp>
+#include <uhd/exception.hpp>
 #include <map>
 #include <string>
-#include <stdexcept>
 
 namespace uhd {
 
@@ -145,87 +145,51 @@ struct UHD_API sensor_value_t
     sensor_value_t& operator=(const sensor_value_t& value);
 
 
-    constexpr operator const std::string&() {
-        if (type != STRING) {
-            throw std::runtime_error("type is not STRING");
+    constexpr void assert_type(data_type_t o_type) {
+        if (type != o_type) {
+            throw uhd::runtime_error("type asseration failed");
         }
-        return value;
     }
 
-    constexpr operator bool() {
-        if (type != BOOLEAN) {
-            throw std::runtime_error("type is not BOOLEAN");
-        }
-        return to_bool();
+    template<typename T> constexpr T get_value();
+    template<> constexpr bool get_value() {
+        assert_type(BOOLEAN); return to_bool();
+    }
+    template<> constexpr int get_value() {
+        assert_type(INTEGER); return to_int();
+    }
+    template<> constexpr double get_value() {
+        assert_type(REALNUM); return to_real();
+    }
+    template<> constexpr const std::string& get_value() {
+        assert_type(STRING); return value;
     }
 
-    constexpr operator int() {
-        if (type != INTEGER) {
-            throw std::runtime_error("type is not INTEGER");
-        }
-        return to_int();
-    }
+    template<typename T> struct data_type_v;
+    template<> struct data_type_v<bool>{
+        static constexpr auto type = data_type_t::BOOLEAN;
+    };
+    template<> struct data_type_v<int> {
+        static constexpr auto type = data_type_t::INTEGER;
+    };
+    template<> struct data_type_v<double> {
+        static constexpr auto type = data_type_t::REALNUM;
+    };
+    template<> struct data_type_v<std::string> {
+        static constexpr auto type = data_type_t::STRING;
+    };
 
-    constexpr operator double() {
-        if (type != REALNUM) {
-            throw std::runtime_error("type is not REALNUM");
-        }
-        return to_real();
-    }
+    template<typename T> struct data_type_cvref {
+        static constexpr auto type =
+            data_type_v<typename std::remove_cvref<T>::type>::type;
+    };
 
-
-    constexpr bool operator==(const std::string& v)
-    {
-        return type == STRING && value == v;
+    template<typename T> constexpr bool is_value(T v) {
+        return data_type_cvref<T>::type == type && get_value<T>() == v;
     }
-    constexpr bool operator==(const bool& v)
-    {
-        return type == BOOLEAN && to_bool() == v;
+    template<typename T> constexpr bool is_not_value(T v) {
+        return data_type_cvref<T>::type != type || get_value<T>() != v;
     }
-    constexpr bool operator==(const int& v)
-    {
-        return type == INTEGER && to_int() == v;
-    }
-    constexpr bool operator==(const double& v)
-    {
-        return type == REALNUM && to_real() == v;
-    }
-
-    constexpr bool operator!=(const std::string& v)
-    {
-        return type != STRING || value != v;
-    }
-    constexpr bool operator!=(const bool& v)
-    {
-        return type != BOOLEAN || to_bool() != v;
-    }
-    constexpr bool operator!=(const int& v)
-    {
-        return type != INTEGER || to_int() != v;
-    }
-    constexpr bool operator!=(const double& v)
-    {
-        return type != REALNUM || to_real() != v;
-    }
-
-#if __cplusplus > 201703L
-    constexpr auto operator<=>(const std::string& v)
-    {
-        return type == STRING ? value <=> v : std::strong_ordering::greater;
-    }
-    constexpr auto operator<=>(const bool& v)
-    {
-        return type == BOOLEAN ? to_bool() <=> v : std::strong_ordering::greater;
-    }
-    constexpr auto operator<=>(const int& v)
-    {
-        return type == INTEGER ? to_int() <=> v : std::strong_ordering::greater;
-    }
-    constexpr auto operator<=>(const double& v)
-    {
-        return type == REALNUM ? to_real() <=> v : std::partial_ordering::greater;
-    }
-#endif
 };
 
 } // namespace uhd
