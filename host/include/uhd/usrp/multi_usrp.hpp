@@ -1966,13 +1966,13 @@ public:
 private:
     template<sensor_location_t L> struct dependent_false : std::false_type { };
 public:
-    template <sensor_location_t L, class T>
+    template <sensor_location_t L, typename T>
     inline bool is_sensor_value(
         const std::string& name, size_t index, const T& expected_value) {
         if constexpr (L == sensor_location_t::MBOARD) {
             if (index == ALL_MBOARDS) {
                 for (size_t mboard = 0; mboard < get_num_mboards(); ++mboard) {
-                    if (get_sensor<L, T>(name, mboard).is_value(expected_value)) {
+                    if (get_sensor<L>(name, mboard).is_value(expected_value)) {
                         return false;
                     }
                 }
@@ -1981,7 +1981,7 @@ public:
         } else if constexpr (L == sensor_location_t::RX) {
             if (index == ALL_CHANS) {
                 for (size_t ch = 0; ch < get_rx_num_channels(); ++ch) {
-                    if (get_sensor<L, T>(name, ch).is_value(expected_value)) {
+                    if (get_sensor<L>(name, ch).is_value(expected_value)) {
                         return false;
                     }
                 }
@@ -1990,7 +1990,7 @@ public:
         } else if constexpr (L == sensor_location_t::TX) {
             if (index == ALL_CHANS) {
                 for (size_t ch = 0; ch < get_tx_num_channels(); ++ch) {
-                    if (get_sensor<L, T>(name, ch).is_value(expected_value)) {
+                    if (get_sensor<L>(name, ch).is_value(expected_value)) {
                         return false;
                     }
                 }
@@ -1999,7 +1999,7 @@ public:
         } else {
             static_assert(dependent_false<L>::value, "Unknown sensor location");
         }
-        return get_sensor<L, T>(name, index).is_value(expected_value);
+        return get_sensor<L>(name, index).is_value(expected_value);
     }
 
     template <sensor_location_t L>
