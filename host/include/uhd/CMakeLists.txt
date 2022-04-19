@@ -30,6 +30,7 @@ UHD_INSTALL(FILES
     property_tree.hpp
     rfnoc_graph.hpp
     stream.hpp
+    image_loader.hpp
     ${CMAKE_CURRENT_BINARY_DIR}/version.hpp
     DESTINATION ${INCLUDE_DIR}/uhd
     COMPONENT headers
