@@ -1963,43 +1963,74 @@ public:
         return value.get_value<T>();
     }
 
-private:
-    template<sensor_location_t L> struct dependent_false : std::false_type { };
-public:
-    template <sensor_location_t L, typename T>
-    bool is_sensor_value(const std::string& name, size_t index, const T& expected_value)
+    template <sensor_location_t L, class T>
+    inline bool is_sensor_value(
+        const std::string& name, size_t index, const T& expected_value);
+
+    template <sensor_location_t L, class T>
+    inline typename std::enable_if<L == sensor_location_t::MBOARD, bool>::type
+    is_sensor_value(const std::string& name, size_t index, const T& expected_value)
     {
-        if constexpr (L == sensor_location_t::MBOARD) {
-            if (index == ALL_MBOARDS) {
-                for (size_t mboard = 0; mboard < get_num_mboards(); ++mboard) {
-                    if (get_sensor<T>(L, name, mboard).is_value(expected_value)) {
-                        return false;
-                    }
+        if (index == ALL_MBOARDS) {
+            for (size_t mboard = 0; mboard < get_num_mboards(); ++mboard) {
+                if (get_sensor<T, L>(name, mboard).is_value(expected_value)) {
+                    return false;
                 }
-                return true;
             }
-        } else if constexpr (L == sensor_location_t::RX) {
-            if (index == ALL_CHANS) {
-                for (size_t ch = 0; ch < get_rx_num_channels(); ++ch) {
-                    if (get_sensor<T>(L, name, ch).is_value(expected_value)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        } else if constexpr (L == sensor_location_t::TX) {
-            if (index == ALL_CHANS) {
-                for (size_t ch = 0; ch < get_tx_num_channels(); ++ch) {
-                    if (get_sensor<T>(L, name, ch).is_value(expected_value)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        } else {
-            static_assert(dependent_false<L>::value, "Unknown sensor location");
+            return true;
         }
-        return get_sensor_value<T>(L, name, index) == expected_value;
+        return get_sensor<T, L>(name, index).is_value(expected_value);
+    }
+
+    template <sensor_location_t L, class T>
+    inline typename std::enable_if<L == sensor_location_t::RX, bool>::type
+    is_sensor_value(const std::string& name, size_t index, const T& expected_value)
+    {
+        if (index == ALL_CHANS) {
+            for (size_t ch = 0; ch < get_rx_num_channels(); ++ch) {
+                if (get_sensor<T, L>(name, ch).is_value(expected_value)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return get_sensor<T, L>(name, index).is_value(expected_value);
+    }
+
+    template <sensor_location_t L, class T>
+    inline typename std::enable_if<L == sensor_location_t::TX, bool>::type
+    is_sensor_value(const std::string& name, size_t index, const T& expected_value)
+    {
+        if (index == ALL_CHANS) {
+            for (size_t ch = 0; ch < get_tx_num_channels(); ++ch) {
+                if (get_sensor<T, L>(name, ch).is_value(expected_value)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return get_sensor<T, L>(name, index).is_value(expected_value);
+    }
+
+    template <sensor_location_t L>
+    inline std::vector<std::string> get_sensor_names(size_t index);
+    template <>
+    inline std::vector<std::string> get_sensor_names<sensor_location_t::MBOARD>(
+        size_t mboard)
+    {
+        return get_mboard_sensor_names(mboard);
+    }
+    template <>
+    inline std::vector<std::string> get_sensor_names<sensor_location_t::RX>(
+        size_t mboard)
+    {
+        return get_rx_sensor_names(mboard);
+    }
+    template <>
+    inline std::vector<std::string> get_sensor_names<sensor_location_t::TX>(
+        size_t mboard)
+    {
+        return get_tx_sensor_names(mboard);
     }
 };
 
