@@ -145,23 +145,23 @@ struct UHD_API sensor_value_t
     sensor_value_t& operator=(const sensor_value_t& value);
 
 
-    constexpr void assert_type(data_type_t o_type) {
+    inline void assert_type(data_type_t o_type) const {
         if (type != o_type) {
             throw uhd::runtime_error("type asseration failed");
         }
     }
 
-    template<typename T> constexpr T get_value();
-    template<> constexpr bool get_value() {
+    template<typename T> inline T get_value() const;
+    template<> inline bool get_value<bool>() const {
         assert_type(BOOLEAN); return to_bool();
     }
-    template<> constexpr int get_value() {
+    template<> inline int get_value<int>() const {
         assert_type(INTEGER); return to_int();
     }
-    template<> constexpr double get_value() {
+    template<> inline double get_value<double>() const {
         assert_type(REALNUM); return to_real();
     }
-    template<> constexpr const std::string& get_value() {
+    template<> inline const std::string& get_value<const std::string&>() const {
         assert_type(STRING); return value;
     }
 
@@ -184,10 +184,10 @@ struct UHD_API sensor_value_t
             data_type_v<typename std::remove_cvref<T>::type>::type;
     };
 
-    template<typename T> constexpr bool is_value(T v) {
+    template<typename T> inline bool is_value(T v) const {
         return data_type_cvref<T>::type == type && get_value<T>() == v;
     }
-    template<typename T> constexpr bool is_not_value(T v) {
+    template<typename T> inline bool is_not_value(T v) const {
         return data_type_cvref<T>::type != type || get_value<T>() != v;
     }
 };

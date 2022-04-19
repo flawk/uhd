@@ -1934,11 +1934,7 @@ public:
     virtual uhd::rfnoc::mb_controller& get_mb_controller(const size_t mboard = 0) = 0;
 
     //! Sensor location enum
-    enum class sensor_location_t : uint8_t {
-        MBOARD = 0,
-        RX,
-        TX
-    };
+    enum class sensor_location_t : uint8_t { MBOARD = 0, RX, TX };
     template <sensor_location_t L>
     inline sensor_value_t get_sensor(const std::string& name, size_t index);
 
@@ -1965,6 +1961,45 @@ public:
     {
         const uhd::sensor_value_t value = get_sensor<L>(name, index);
         return value.get_value<T>();
+    }
+
+private:
+    template<sensor_location_t L> struct dependent_false : std::false_type { };
+public:
+    template <sensor_location_t L, typename T>
+    bool is_sensor_value(const std::string& name, size_t index, const T& expected_value)
+    {
+        if constexpr (L == sensor_location_t::MBOARD) {
+            if (index == ALL_MBOARDS) {
+                for (size_t mboard = 0; mboard < get_num_mboards(); ++mboard) {
+                    if (get_sensor<T>(L, name, mboard).is_value(expected_value)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        } else if constexpr (L == sensor_location_t::RX) {
+            if (index == ALL_CHANS) {
+                for (size_t ch = 0; ch < get_rx_num_channels(); ++ch) {
+                    if (get_sensor<T>(L, name, ch).is_value(expected_value)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        } else if constexpr (L == sensor_location_t::TX) {
+            if (index == ALL_CHANS) {
+                for (size_t ch = 0; ch < get_tx_num_channels(); ++ch) {
+                    if (get_sensor<T>(L, name, ch).is_value(expected_value)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        } else {
+            static_assert(dependent_false<L>::value, "Unknown sensor location");
+        }
+        return get_sensor_value<T>(L, name, index) == expected_value;
     }
 };
 
