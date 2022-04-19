@@ -1932,6 +1932,40 @@ public:
      * \throws uhd::not_implemented_error if not on an RFNoC device.
      */
     virtual uhd::rfnoc::mb_controller& get_mb_controller(const size_t mboard = 0) = 0;
+
+    //! Sensor location enum
+    enum class sensor_location_t : uint8_t {
+        MBOARD = 0,
+        RX,
+        TX
+    };
+    template <sensor_location_t L>
+    inline sensor_value_t get_sensor(const std::string& name, size_t index);
+
+    template <>
+    inline sensor_value_t get_sensor<sensor_location_t::MBOARD>(
+        const std::string& name, size_t mboard)
+    {
+        return get_mboard_sensor(name, mboard);
+    }
+    template <>
+    inline sensor_value_t get_sensor<sensor_location_t::RX>(
+        const std::string& name, size_t channel)
+    {
+        return get_rx_sensor(name, channel);
+    }
+    template <>
+    inline sensor_value_t get_sensor<sensor_location_t::TX>(
+        const std::string& name, size_t channel)
+    {
+        return get_tx_sensor(name, channel);
+    }
+    template <uhd::usrp::multi_usrp::sensor_location_t L, typename T>
+    inline T get_sensor_value(const std::string& name, size_t index)
+    {
+        const uhd::sensor_value_t value = get_sensor<L>(name, index);
+        return value.get_value<T>();
+    }
 };
 
 }} // namespace uhd::usrp
