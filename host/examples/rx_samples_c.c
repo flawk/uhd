@@ -33,6 +33,18 @@ void print_help(void){
                     "    -h (print this help message)\n");
 };
 
+/// Fix for -std=cXX
+static char* gnuc_strdup(const char* s)
+{
+  size_t slen = strlen(s);
+  char* result = (char*) malloc(slen + 1);
+  if (!result) {
+    return 0;
+  }
+  memcpy(result, s, slen+1);
+  return result;
+}
+
 int main(int argc, char* argv[])
 {
     int option = 0;
@@ -52,7 +64,7 @@ int main(int argc, char* argv[])
     while((option = getopt(argc, argv, "a:f:r:g:n:o:vh")) != -1){
         switch(option){
             case 'a':
-                device_args = strdup(optarg);
+                device_args = gnuc_strdup(optarg);
                 break;
 
             case 'f':
@@ -72,7 +84,7 @@ int main(int argc, char* argv[])
                 break;
 
             case 'o':
-                filename = strdup(optarg);
+                filename = gnuc_strdup(optarg);
                 custom_filename = true;
                 break;
 
@@ -92,7 +104,7 @@ int main(int argc, char* argv[])
     }
 
     if (!device_args)
-            device_args = strdup("");
+            device_args = gnuc_strdup("");
 
     // Create USRP
     uhd_usrp_handle usrp;

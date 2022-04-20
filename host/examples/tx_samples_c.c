@@ -42,6 +42,18 @@ void sigint_handler(int code){
     stop_signal_called = true;
 }
 
+/// Fix for -std=cXX
+static char* gnuc_strdup(const char* s)
+{
+  size_t slen = strlen(s);
+  char* result = (char*) malloc(slen + 1);
+  if (!result) {
+    return 0;
+  }
+  memcpy(result, s, slen+1);
+  return result;
+}
+
 int main(int argc, char* argv[]){
     int option = 0;
     double freq = 2e9;
@@ -58,7 +70,7 @@ int main(int argc, char* argv[]){
     while((option = getopt(argc, argv, "a:f:r:g:n:vh")) != -1){
         switch(option){
             case 'a':
-                device_args = strdup(optarg);
+                device_args = gnuc_strdup(optarg);
                 break;
 
             case 'f':
@@ -93,7 +105,7 @@ int main(int argc, char* argv[]){
     }
 
     if (!device_args)
-        device_args = strdup("");
+        device_args = gnuc_strdup("");
 
     // Create USRP
     uhd_usrp_handle usrp;
