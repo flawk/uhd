@@ -126,9 +126,10 @@ endif(ENABLE_PYTHON_API)
 # API
 ###############################################################################
 macro(UHD_ADD_NONAPI_TEST)
-    cmake_parse_arguments(test "NOAUTORUN" "TARGET" "INCLUDE_DIRS;EXTRA_SOURCES;EXTRA_LIBS" ${ARGN})
+    cmake_parse_arguments(test "NOAUTORUN" "TARGET" "INCLUDE_DIRS;EXTRA_SOURCES;EXTRA_LIBS;EXTRA_LIB_DIRS" ${ARGN})
     get_filename_component(test_name ${test_TARGET} NAME_WE)
     include_directories(${test_INCLUDE_DIRS})
+    link_directories(${test_EXTRA_LIB_DIRS})
     add_executable(${test_name} ${test_TARGET} ${test_EXTRA_SOURCES})
     target_link_libraries(${test_name} uhd uhd_test ${Boost_LIBRARIES})
     if(NOT ${test_NOAUTORUN})
@@ -144,7 +145,7 @@ endmacro(UHD_ADD_NONAPI_TEST)
 # Add a unit test for an RFNoC block controller
 ###############################################################################
 macro(UHD_ADD_RFNOC_BLOCK_TEST)
-    cmake_parse_arguments(test "NOAUTORUN" "TARGET" "INCLUDE_DIRS;EXTRA_SOURCES;EXTRA_LIBS" ${ARGN})
+    cmake_parse_arguments(test "NOAUTORUN" "TARGET" "INCLUDE_DIRS;EXTRA_SOURCES;EXTRA_LIBS;EXTRA_LIB_DIRS" ${ARGN})
     UHD_ADD_NONAPI_TEST(
         TARGET rfnoc_block_tests/${test_TARGET}
         EXTRA_SOURCES
@@ -152,6 +153,8 @@ macro(UHD_ADD_RFNOC_BLOCK_TEST)
         ${UHD_SOURCE_DIR}/lib/rfnoc/graph.cpp
         INCLUDE_DIRS
         ${test_INCLUDE_DIRS}
+        EXTRA_LIB_DIRS
+        ${test_EXTRA_LIB_DIRS}
     )
 endmacro(UHD_ADD_RFNOC_BLOCK_TEST)
 
@@ -174,6 +177,7 @@ if(ENABLE_DPDK)
         INCLUDE_DIRS
         ${DPDK_INCLUDE_DIRS}
         EXTRA_LIBS ${DPDK_LIBRARIES}
+        EXTRA_LIB_DIRS ${DPDK_LIBRARY_DIRS}
         NOAUTORUN # Don't register for auto-run, it requires special config
     )
     UHD_ADD_NONAPI_TEST(
@@ -190,6 +194,7 @@ if(ENABLE_DPDK)
         INCLUDE_DIRS
         ${DPDK_INCLUDE_DIRS}
         EXTRA_LIBS ${DPDK_LIBRARIES}
+        EXTRA_LIB_DIRS ${DPDK_LIBRARY_DIRS}
         NOAUTORUN # Don't register for auto-run, it requires special config
     )
     set_source_files_properties(

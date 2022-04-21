@@ -27,6 +27,7 @@ if(ENABLE_DPDK)
         PROPERTIES COMPILE_FLAGS "${UHD_DPDK_CFLAGS} -D_GNU_SOURCE"
     )
     include_directories(${DPDK_INCLUDE_DIRS})
+    link_directories(${DPDK_LIBRARY_DIRS})
     LIBUHD_APPEND_LIBS(${DPDK_LIBRARIES})
 endif(ENABLE_DPDK)
 
