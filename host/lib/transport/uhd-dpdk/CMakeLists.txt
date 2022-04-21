@@ -29,5 +29,6 @@ if(ENABLE_DPDK)
     include_directories(${DPDK_INCLUDE_DIRS})
     link_directories(${DPDK_LIBRARY_DIRS})
     LIBUHD_APPEND_LIBS(${DPDK_LIBRARIES})
+    LIBUHD_APPEND_LIB_DIRS(${DPDK_LIBRARY_DIRS})
 endif(ENABLE_DPDK)
 
