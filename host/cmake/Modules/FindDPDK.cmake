@@ -62,7 +62,7 @@ if(NOT DPDK_USER_PROVIDED)
 
   getListOfVarsStartingWith("pkgcfg_lib_PC_DPDK_" dpdk_lib_vars)
   foreach (_var IN LISTS matchedVars)
-      message("${_var}=${${_var}}")
+      message(STATUS "${_var}=${${_var}}")
   endforeach()
 endif()
 
@@ -100,6 +100,6 @@ else()
 endif()
 
 find_package_handle_standard_args(DPDK
-    REQUIRED_VARS DPDK_INCLUDE_DIRS DPDK_LIBRARIES
+    REQUIRED_VARS DPDK_INCLUDE_DIRS DPDK_LIBRARIES DPDK_LIBRARY_DIRS
     VERSION_VAR DPDK_VERSION
 )
