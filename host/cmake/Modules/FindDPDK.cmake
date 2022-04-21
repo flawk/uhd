@@ -52,6 +52,20 @@ find_path (DPDK_CONFIG_INCLUDE_DIR rte_config.h
     PATH_SUFFIXES dpdk
 )
 
+# find list of provided DPDK components
+if(NOT DPDK_USER_PROVIDED)
+  function (getListOfVarsStartingWith _prefix _varResult)
+      get_cmake_property(_vars VARIABLES)
+      string (REGEX MATCHALL "(^|;)${_prefix}[A-Za-z0-9_]*" _matchedVars "${_vars}")
+      set (${_varResult} ${_matchedVars} PARENT_SCOPE)
+  endfunction()
+
+  getListOfVarsStartingWith("pkgcfg_lib_PC_DPDK_" dpdk_lib_vars)
+  foreach (_var IN LISTS matchedVars)
+      message("${_var}=${${_var}}")
+  endforeach()
+endif()
+
 # Check for linker script that pulls in the APIs
 find_library(DPDK_LIBRARY
     dpdk
@@ -71,7 +85,7 @@ if(DPDK_USER_PROVIDED)
     set(DPDK_LIBRARY_DIRS "")
 else()
     set(DPDK_LIBRARIES ${PC_DPDK_LIBRARIES})
-    set(DPDK_LIBRARY_DIRS ${PC_DPDK_LIBRARY_DIRS})
+    set(DPDK_LIBRARY_DIRS ${PC_DPDK_LIBDIR})
 
     if(DPDK_LIBRARY)
         list(APPEND DPDK_LIBRARIES ${DPDK_LIBRARY})
