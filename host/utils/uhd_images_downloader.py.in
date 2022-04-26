@@ -408,6 +408,7 @@ def download(
             return 0, 0, ""
     filesize_dl = 0
     base_filename = os.path.basename(filename)
+    print_progress = False # TODO: print_progress slows down the download by 100x. Need to make the progress loop way more efficient.
     if print_progress and not sys.stdout.isatty():
         print_progress = False
         log("INFO", "Downloading {}, total size: {} kB".format(
