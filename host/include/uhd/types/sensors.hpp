@@ -147,7 +147,7 @@ struct UHD_API sensor_value_t
 
     inline void assert_type(data_type_t o_type) const {
         if (type != o_type) {
-            throw uhd::runtime_error("type asseration failed");
+            throw uhd::runtime_error("sensor_value_t type asseration failed: " + std::to_string(type) + " != " + std::to_string(o_type));
         }
     }
 
