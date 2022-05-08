@@ -1937,29 +1937,29 @@ public:
     virtual uhd::rfnoc::mb_controller& get_mb_controller(const size_t mboard = 0) = 0;
 
     //! Sensor location enum
-    enum class sensor_location_t : uint8_t { MBOARD = 0, RX, TX };
-    template <sensor_location_t L>
+    enum class sensor_loc_t : uint8_t { MBOARD = 0, RX, TX };
+    template <sensor_loc_t L>
     inline sensor_value_t get_sensor(const std::string& name, size_t index);
 
     template <>
-    inline sensor_value_t get_sensor<sensor_location_t::MBOARD>(
+    inline sensor_value_t get_sensor<sensor_loc_t::MBOARD>(
         const std::string& name, size_t mboard)
     {
         return get_mboard_sensor(name, mboard);
     }
     template <>
-    inline sensor_value_t get_sensor<sensor_location_t::RX>(
+    inline sensor_value_t get_sensor<sensor_loc_t::RX>(
         const std::string& name, size_t channel)
     {
         return get_rx_sensor(name, channel);
     }
     template <>
-    inline sensor_value_t get_sensor<sensor_location_t::TX>(
+    inline sensor_value_t get_sensor<sensor_loc_t::TX>(
         const std::string& name, size_t channel)
     {
         return get_tx_sensor(name, channel);
     }
-    template <uhd::usrp::multi_usrp::sensor_location_t L, typename T>
+    template <uhd::usrp::multi_usrp::sensor_loc_t L, typename T>
     inline T get_sensor_value(const std::string& name, size_t index)
     {
         const uhd::sensor_value_t value = get_sensor<L>(name, index);
@@ -1967,12 +1967,12 @@ public:
     }
 
 private:
-    template<sensor_location_t L> struct dependent_false : std::false_type { };
+    template<sensor_loc_t L> struct dependent_false : std::false_type { };
 public:
-    template <sensor_location_t L, typename T>
+    template <sensor_loc_t L, typename T>
     inline bool is_sensor_value(
         const std::string& name, size_t index, const T& expected_value) {
-        if constexpr (L == sensor_location_t::MBOARD) {
+        if constexpr (L == sensor_loc_t::MBOARD) {
             if (index == ALL_MBOARDS) {
                 for (size_t mboard = 0; mboard < get_num_mboards(); ++mboard) {
                     if (!get_sensor<L>(name, mboard).is_value(expected_value)) {
@@ -1981,7 +1981,7 @@ public:
                 }
                 return true;
             }
-        } else if constexpr (L == sensor_location_t::RX) {
+        } else if constexpr (L == sensor_loc_t::RX) {
             if (index == ALL_CHANS) {
                 for (size_t ch = 0; ch < get_rx_num_channels(); ++ch) {
                     if (!get_sensor<L>(name, ch).is_value(expected_value)) {
@@ -1990,7 +1990,7 @@ public:
                 }
                 return true;
             }
-        } else if constexpr (L == sensor_location_t::TX) {
+        } else if constexpr (L == sensor_loc_t::TX) {
             if (index == ALL_CHANS) {
                 for (size_t ch = 0; ch < get_tx_num_channels(); ++ch) {
                     if (!get_sensor<L>(name, ch).is_value(expected_value)) {
@@ -2005,22 +2005,22 @@ public:
         return get_sensor<L>(name, index).is_value(expected_value);
     }
 
-    template <sensor_location_t L>
+    template <sensor_loc_t L>
     inline std::vector<std::string> get_sensor_names(size_t index);
     template <>
-    inline std::vector<std::string> get_sensor_names<sensor_location_t::MBOARD>(
+    inline std::vector<std::string> get_sensor_names<sensor_loc_t::MBOARD>(
         size_t mboard)
     {
         return get_mboard_sensor_names(mboard);
     }
     template <>
-    inline std::vector<std::string> get_sensor_names<sensor_location_t::RX>(
+    inline std::vector<std::string> get_sensor_names<sensor_loc_t::RX>(
         size_t mboard)
     {
         return get_rx_sensor_names(mboard);
     }
     template <>
-    inline std::vector<std::string> get_sensor_names<sensor_location_t::TX>(
+    inline std::vector<std::string> get_sensor_names<sensor_loc_t::TX>(
         size_t mboard)
     {
         return get_tx_sensor_names(mboard);
