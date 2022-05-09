@@ -11,6 +11,7 @@
 #include <uhd/exception.hpp>
 #include <map>
 #include <string>
+#include <boost/type_traits.hpp>
 
 namespace uhd {
 
@@ -181,7 +182,7 @@ struct UHD_API sensor_value_t
 
     template<typename T> struct data_type_cvref {
         static constexpr auto type =
-            data_type_v<typename std::remove_cvref<T>::type>::type;
+            data_type_v<typename boost::remove_cv_ref<T>::type>::type;
     };
 
     template<typename T> inline bool is_value(T v) const {
