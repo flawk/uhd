@@ -153,32 +153,8 @@ struct UHD_API sensor_value_t
     }
 
     template<typename T> inline T get_value() const;
-    template<> inline bool get_value<bool>() const {
-        assert_type(BOOLEAN); return to_bool();
-    }
-    template<> inline int get_value<int>() const {
-        assert_type(INTEGER); return to_int();
-    }
-    template<> inline double get_value<double>() const {
-        assert_type(REALNUM); return to_real();
-    }
-    template<> inline const std::string& get_value<const std::string&>() const {
-        assert_type(STRING); return value;
-    }
 
     template<typename T> struct data_type_v;
-    template<> struct data_type_v<bool>{
-        static constexpr auto type = data_type_t::BOOLEAN;
-    };
-    template<> struct data_type_v<int> {
-        static constexpr auto type = data_type_t::INTEGER;
-    };
-    template<> struct data_type_v<double> {
-        static constexpr auto type = data_type_t::REALNUM;
-    };
-    template<> struct data_type_v<std::string> {
-        static constexpr auto type = data_type_t::STRING;
-    };
 
     template<typename T> struct data_type_cvref {
         static constexpr auto type =
@@ -191,6 +167,32 @@ struct UHD_API sensor_value_t
     template<typename T> inline bool is_not_value(T v) const {
         return data_type_cvref<T>::type != type || get_value<T>() != v;
     }
+};
+
+template<> inline bool sensor_value_t::get_value<bool>() const {
+    assert_type(BOOLEAN); return to_bool();
+}
+template<> inline int sensor_value_t::get_value<int>() const {
+    assert_type(INTEGER); return to_int();
+}
+template<> inline double sensor_value_t::get_value<double>() const {
+    assert_type(REALNUM); return to_real();
+}
+template<> inline const std::string& sensor_value_t::get_value<const std::string&>() const {
+    assert_type(STRING); return value;
+}
+
+template<> struct sensor_value_t::data_type_v<bool>{
+    static constexpr auto type = data_type_t::BOOLEAN;
+};
+template<> struct sensor_value_t::data_type_v<int> {
+    static constexpr auto type = data_type_t::INTEGER;
+};
+template<> struct sensor_value_t::data_type_v<double> {
+    static constexpr auto type = data_type_t::REALNUM;
+};
+template<> struct sensor_value_t::data_type_v<std::string> {
+    static constexpr auto type = data_type_t::STRING;
 };
 
 } // namespace uhd
