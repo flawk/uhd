@@ -1941,24 +1941,6 @@ public:
     template <sensor_loc_t L>
     inline sensor_value_t get_sensor(const std::string& name, size_t index);
 
-    template <>
-    inline sensor_value_t get_sensor<sensor_loc_t::MBOARD>(
-        const std::string& name, size_t mboard)
-    {
-        return get_mboard_sensor(name, mboard);
-    }
-    template <>
-    inline sensor_value_t get_sensor<sensor_loc_t::RX>(
-        const std::string& name, size_t channel)
-    {
-        return get_rx_sensor(name, channel);
-    }
-    template <>
-    inline sensor_value_t get_sensor<sensor_loc_t::TX>(
-        const std::string& name, size_t channel)
-    {
-        return get_tx_sensor(name, channel);
-    }
     template <uhd::usrp::multi_usrp::sensor_loc_t L, typename T>
     inline T get_sensor_value(const std::string& name, size_t index)
     {
@@ -2007,24 +1989,44 @@ public:
 
     template <sensor_loc_t L>
     inline std::vector<std::string> get_sensor_names(size_t index);
-    template <>
-    inline std::vector<std::string> get_sensor_names<sensor_loc_t::MBOARD>(
-        size_t mboard)
-    {
-        return get_mboard_sensor_names(mboard);
-    }
-    template <>
-    inline std::vector<std::string> get_sensor_names<sensor_loc_t::RX>(
-        size_t mboard)
-    {
-        return get_rx_sensor_names(mboard);
-    }
-    template <>
-    inline std::vector<std::string> get_sensor_names<sensor_loc_t::TX>(
-        size_t mboard)
-    {
-        return get_tx_sensor_names(mboard);
-    }
 };
+
+template <>
+inline sensor_value_t multi_usrp::get_sensor<multi_usrp::sensor_loc_t::MBOARD>(
+    const std::string& name, size_t mboard)
+{
+    return get_mboard_sensor(name, mboard);
+}
+template <>
+inline sensor_value_t multi_usrp::get_sensor<multi_usrp::sensor_loc_t::RX>(
+    const std::string& name, size_t channel)
+{
+    return get_rx_sensor(name, channel);
+}
+template <>
+inline sensor_value_t multi_usrp::get_sensor<multi_usrp::sensor_loc_t::TX>(
+    const std::string& name, size_t channel)
+{
+    return get_tx_sensor(name, channel);
+}
+
+template <>
+inline std::vector<std::string> multi_usrp::get_sensor_names<multi_usrp::sensor_loc_t::MBOARD>(
+    size_t mboard)
+{
+    return get_mboard_sensor_names(mboard);
+}
+template <>
+inline std::vector<std::string> multi_usrp::get_sensor_names<multi_usrp::sensor_loc_t::RX>(
+    size_t mboard)
+{
+    return get_rx_sensor_names(mboard);
+}
+template <>
+inline std::vector<std::string> multi_usrp::get_sensor_names<multi_usrp::sensor_loc_t::TX>(
+    size_t mboard)
+{
+    return get_tx_sensor_names(mboard);
+}
 
 }} // namespace uhd::usrp
