@@ -1470,6 +1470,15 @@ public:
         return rx_chain.radio->get_rx_gain_range(name, rx_chain.block_chan);
     }
 
+    gain_range_t get_rx_gain_range_at_freq(
+        const std::string& name, size_t chan, const boost::optional<double>& freq) override
+    {
+        auto& rx_chain = _get_rx_chan(chan);
+        return rx_chain.radio->get_rx_gain_range_at_freq(name,
+            rx_chain.block_chan,
+            freq ? freq : boost::optional<double>{get_rx_freq(chan)});
+    }
+
     std::vector<std::string> get_rx_gain_names(size_t chan = 0) override
     {
         auto& rx_chain = _get_rx_chan(chan);

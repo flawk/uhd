@@ -33,6 +33,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 using namespace uhd::rfnoc;
 
@@ -239,6 +240,10 @@ public:
 
     uhd::gain_range_t get_rx_gain_range(
         const std::string& name, const size_t chan) const override;
+
+    uhd::gain_range_t get_rx_gain_range_at_freq(const std::string& name,
+        const size_t chan,
+        const boost::optional<double>& freq) const override;
 
     void set_rx_agc(const bool, const size_t) override;
 

@@ -42,6 +42,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 namespace uhd { namespace usrp {
 
@@ -1128,6 +1129,28 @@ public:
     gain_range_t get_rx_gain_range(size_t chan = 0)
     {
         return this->get_rx_gain_range(ALL_GAINS, chan);
+    }
+
+    /*!
+     * Get the RX gain range for the specified gain element at a given frequency.
+     * For an empty name, calculate the overall gain range.
+     * \param name the name of the gain element
+     * \param chan the channel index 0 to N-1
+     * @param freq the frequency the gain range will be for
+     * \return a gain range object
+     */
+    virtual gain_range_t get_rx_gain_range_at_freq(const std::string& name,
+        size_t chan                      = 0,
+        [[maybe_unused]] const boost::optional<double>& freq = boost::none)
+    {
+        return get_rx_gain_range(name, chan);
+    }
+
+    //! A convenience wrapper for getting overall RX gain range at a given frequency
+    gain_range_t get_rx_gain_range_at_freq(size_t chan       = 0,
+        [[maybe_unused]] const boost::optional<double>& freq = boost::none)
+    {
+        return this->get_rx_gain_range_at_freq(ALL_GAINS, chan, freq);
     }
 
     /*!

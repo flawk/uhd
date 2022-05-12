@@ -589,6 +589,25 @@ uhd::gain_range_t zbx_dboard_impl::get_rx_gain_range(
     return ZBX_RX_GAIN_RANGE;
 }
 
+uhd::gain_range_t zbx_dboard_impl::get_rx_gain_range_at_freq(
+    const std::string& name, const size_t, const boost::optional<double>& freq) const
+{
+    // We have to accept the empty string for "all", because that's widely used
+    // (e.g. by multi_usrp)
+    if (!name.empty() && name != ZBX_GAIN_STAGE_ALL) {
+        throw uhd::value_error(
+            std::string("get_rx_gain_range(): Unknown gain name '") + name + "'!");
+    }
+
+    if (freq) {
+        return *freq < RX_LOW_FREQ_MAX_GAIN_CUTOFF ? ZBX_RX_LOW_FREQ_GAIN_RANGE : ZBX_RX_GAIN_RANGE;
+    } else {
+        // FIXME This should return a ZBX_RX_LOW_FREQ_GAIN_RANGE when freq is
+        // low, but this function is const
+        return ZBX_RX_GAIN_RANGE;
+    }
+}
+
 void zbx_dboard_impl::set_rx_lo_export_enabled(bool, const std::string&, const size_t)
 {
     throw uhd::not_implemented_error(

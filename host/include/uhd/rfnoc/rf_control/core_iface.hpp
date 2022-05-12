@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 namespace uhd { namespace rfnoc { namespace rf_control {
 
@@ -185,6 +186,15 @@ public:
      */
     virtual uhd::gain_range_t get_rx_gain_range(
         const std::string& name, const size_t chan) const = 0;
+
+    /*! Return a range of valid RX gains given a frequency
+     */
+    virtual uhd::gain_range_t get_rx_gain_range_at_freq(const std::string& name,
+        const size_t chan,
+        [[maybe_unused]] const boost::optional<double>& freq) const
+    {
+        return get_rx_gain_range(name, chan);
+    }
 
     /*! Return the overall receive gain on channel \p chan
      *

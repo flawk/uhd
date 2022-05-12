@@ -28,6 +28,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <boost/optional.hpp>
 
 
 namespace uhd { namespace rfnoc {
@@ -115,6 +116,9 @@ public:
     uhd::gain_range_t get_rx_gain_range(const size_t chan) const override;
     uhd::gain_range_t get_rx_gain_range(
         const std::string& name, const size_t chan) const override;
+    uhd::gain_range_t get_rx_gain_range_at_freq(const std::string& name,
+        const size_t chan,
+        const boost::optional<double>& freq) const override;
     double get_rx_gain(const size_t chan) override;
     double get_rx_gain(const std::string& name, const size_t chan) override;
     double set_rx_gain(const double gain, const size_t chan) override;

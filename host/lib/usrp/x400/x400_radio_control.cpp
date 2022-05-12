@@ -571,6 +571,13 @@ uhd::gain_range_t x400_radio_control_impl::get_rx_gain_range(
     return _daughterboard->get_rx_gain_range(name, chan);
 }
 
+uhd::gain_range_t x400_radio_control_impl::get_rx_gain_range_at_freq(
+    const std::string& name, const size_t chan, const boost::optional<double>& freq) const
+{
+    std::lock_guard<std::recursive_mutex> l(_lock);
+    return _daughterboard->get_rx_gain_range_at_freq(name, chan, freq);
+}
+
 double x400_radio_control_impl::get_rx_gain(const size_t chan)
 {
     std::lock_guard<std::recursive_mutex> l(_lock);
