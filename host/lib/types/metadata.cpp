@@ -20,7 +20,7 @@ std::string rx_metadata_t::to_pp_string(bool compact) const
 
     if (compact) {
         if (has_time_spec) {
-            ss << "Time: " << std::string(time_spec) << " s\n";
+            ss << "Time: " << time_spec << " s\n";
         }
         if (more_fragments) {
             ss << "Fragmentation offset: " << fragment_offset << "\n";
@@ -36,7 +36,7 @@ std::string rx_metadata_t::to_pp_string(bool compact) const
         }
     } else {
         ss << "Has timespec: " << (has_time_spec ? "Yes" : "No")
-           << "\tTime of first sample: " << std::string(time_spec)
+           << "\tTime of first sample: " << time_spec
            << "\nFragmented: " << (more_fragments ? "Yes" : "No")
            << "  Fragmentation offset: " << fragment_offset
            << "\nStart of burst: " << (start_of_burst ? "Yes" : "No")
