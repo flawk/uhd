@@ -99,6 +99,12 @@ public:
      */
     double get_frac_secs(void) const;
 
+    //! ostream operator with full precision
+    friend std::ostream& operator<<(std::ostream& os, const time_spec_t& t);
+
+    //! stringify, keeping full precision
+    operator std::string() const;
+
     //! Implement addable interface
     time_spec_t& operator+=(const time_spec_t&);
     time_spec_t& operator+=(double&);

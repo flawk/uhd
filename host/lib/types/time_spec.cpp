@@ -7,6 +7,9 @@
 
 #include <uhd/types/time_spec.hpp>
 #include <cmath>
+#include <sstream>
+#include <iomanip>
+#include <limits>
 
 using namespace uhd;
 
@@ -78,6 +81,23 @@ long long time_spec_t::to_ticks(double tick_rate) const
 double time_spec_t::get_real_secs(void) const
 {
     return this->get_full_secs() + this->get_frac_secs();
+}
+
+std::ostream& operator<<(std::ostream& os, const time_spec_t& t)
+{
+    std::stringstream ss_frac;
+    ss_frac << std::setprecision(std::numeric_limits<double>::digits10 + 1)
+            << std::showpoint << t.get_frac_secs();
+    os << t.get_full_secs();
+    os << ss_frac.view().substr(1);
+    return os;
+}
+
+time_spec_t::operator std::string() const
+{
+    std::stringstream ss;
+    ss << this;
+    return ss.str();
 }
 
 /***********************************************************************
