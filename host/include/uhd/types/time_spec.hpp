@@ -10,6 +10,7 @@
 #include <uhd/config.hpp>
 #include <stdint.h>
 #include <boost/operators.hpp>
+#include <ostream>
 
 namespace uhd {
 
@@ -99,9 +100,6 @@ public:
      */
     double get_frac_secs(void) const;
 
-    //! ostream operator with full precision
-    friend std::ostream& operator<<(std::ostream& os, const time_spec_t& t);
-
     //! stringify, keeping full precision
     operator std::string() const;
 
@@ -135,3 +133,5 @@ UHD_INLINE double time_spec_t::get_frac_secs(void) const
 }
 
 } // namespace uhd
+
+UHD_API std::ostream& operator<<(std::ostream& os, const uhd::time_spec_t& t);
