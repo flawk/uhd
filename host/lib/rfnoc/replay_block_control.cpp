@@ -175,7 +175,7 @@ public:
         _play_size.reserve(_num_output_ports);
         _packet_size.reserve(_num_output_ports);
         _atomic_item_size_out.reserve(_num_output_ports);
-        _cmd_fifo_spaces.reserve(_num_output_ports);
+        _cmd_fifo_spaces.resize(_num_output_ports);
         for (size_t port = 0; port < _num_output_ports; port++) {
             _register_output_props(port);
             _replay_reg_iface.poke32(REG_PLAY_ITEM_SIZE_ADDR,
