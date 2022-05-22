@@ -379,7 +379,6 @@ void dpdk_ctx::_eal_init(const device_addr_t& eal_args)
                 opt = eal_add_opt(argv, end - opt, opt, "-b", entry.c_str());
             }
         } else if (key == "dpdk_pci_whitelist" || key == "dpdk_pci_allowlist") {
-            opt = eal_add_opt(argv, end - opt, opt, "-w", val.c_str());
             std::stringstream ss(val);
             while (ss.good()) {
                 std::string entry;
