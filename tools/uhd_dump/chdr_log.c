@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
   host_addr.s_addr = 0x0;
   //usrp_addr.s_addr = 0x0;
 
-  while ((c = getopt(argc, argv, "h:u:")) != -1) {
+  while ((c = uhd_getopt(argc, argv, "h:u:")) != -1) {
     switch(c) {
     case 'h':
       // Explicit IP address for host on command line

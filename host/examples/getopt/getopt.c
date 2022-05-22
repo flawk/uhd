@@ -23,7 +23,7 @@ int optopt;
 char *optarg;
 
 int
-getopt(int argc, char **argv, char *opts)
+uhd_getopt(int argc, char **argv, char *opts)
 {
     static int sp;
     int c;

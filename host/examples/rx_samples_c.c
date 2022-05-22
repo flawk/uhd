@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
     char error_string[512];
 
     // Process options
-    while((option = getopt(argc, argv, "a:f:r:g:n:o:vh")) != -1){
+    while((option = uhd_getopt(argc, argv, "a:f:r:g:n:o:vh")) != -1){
         switch(option){
             case 'a':
                 device_args = gnuc_strdup(optarg);

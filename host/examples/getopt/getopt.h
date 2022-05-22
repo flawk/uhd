@@ -14,6 +14,6 @@ extern int   optind;
 extern int   optopt;
 extern char* optarg;
 
-int getopt(int argc, char **argv, char *opts);
+int uhd_getopt(int argc, char **argv, char *opts);
 
 #endif /* _GETOPT_H_ */
