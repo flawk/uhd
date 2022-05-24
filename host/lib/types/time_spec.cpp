@@ -88,7 +88,7 @@ std::ostream& operator<<(std::ostream& os, const time_spec_t& t)
     std::stringstream ss_frac;
     ss_frac << std::setprecision(std::numeric_limits<double>::digits10 + 1)
             << std::showpoint << t.get_frac_secs();
-    return os << t.get_full_secs() << ss_frac.view().substr(1);
+    return os << t.get_full_secs() << ss_frac.str().substr(1);
 }
 
 time_spec_t::operator std::string() const
