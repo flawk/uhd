@@ -56,6 +56,15 @@ public:
     device_addr_t(const std::map<std::string, std::string>& info);
 
     /*!
+     * Input iterator constructor:
+     * Makes boost::assign::map_list_of work.
+     * \param first the begin iterator
+     * \param last the end iterator
+     */
+    template <typename InputIterator>
+    device_addr_t(InputIterator first, InputIterator last);
+
+    /*!
      * Convert a device address into a pretty print string.
      * \return a printable string representing the device address
      */

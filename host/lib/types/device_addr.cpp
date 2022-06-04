@@ -57,6 +57,13 @@ device_addr_t::device_addr_t(const std::map<std::string, std::string>& info)
     }
 }
 
+template <typename InputIterator>
+device_addr_t::device_addr_t(InputIterator first, InputIterator last):
+    dict<std::string, std::string>(first, last)
+{
+    /* NOP */
+}
+
 std::string device_addr_t::to_pp_string(void) const
 {
     if (this->size() == 0)
