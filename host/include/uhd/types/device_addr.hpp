@@ -62,7 +62,11 @@ public:
      * \param last the end iterator
      */
     template <typename InputIterator>
-    device_addr_t(InputIterator first, InputIterator last);
+    device_addr_t(InputIterator first, InputIterator last):
+        dict<std::string, std::string>(first, last)
+    {
+        /* NOP */
+    }
 
     /*!
      * Convert a device address into a pretty print string.
