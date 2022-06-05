@@ -200,7 +200,7 @@ void noc_block_base::_set_tick_rate(const double tick_rate)
         return;
     }
     if (tick_rate <= 0) {
-        RFNOC_LOG_WARNING("Attempting to set tick rate to 0. Skipping.")
+        RFNOC_LOG_DEBUG("Attempting to set tick rate to 0. Skipping.")
         return;
     }
     if (_tb_clock_iface->get_name() == CLOCK_KEY_GRAPH) {
