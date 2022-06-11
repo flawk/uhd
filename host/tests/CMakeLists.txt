@@ -30,7 +30,6 @@ set(test_sources
     cal_data_gain_pwr_test.cpp
     chdr_parse_test.cpp
     cal_data_dsa_test.cpp
-    chdr_test.cpp
     constrained_device_args_test.cpp
     convert_test.cpp
     dict_test.cpp
@@ -220,11 +219,6 @@ UHD_ADD_NONAPI_TEST(
     ${UHD_SOURCE_DIR}/lib/rfnoc/chdr_tx_data_xport.cpp
     ${UHD_SOURCE_DIR}/lib/transport/inline_io_service.cpp
     NOAUTORUN # Don't register for auto-run
-)
-
-UHD_ADD_NONAPI_TEST(
-    TARGET "packet_handler_benchmark.cpp"
-    NOAUTORUN
 )
 
 UHD_ADD_NONAPI_TEST(
