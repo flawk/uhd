@@ -10,11 +10,11 @@
 #include <uhd/config.hpp>
 #include <stdint.h>
 #include <boost/operators.hpp>
-#include <ostream>
 #include <cmath>
-#include <sstream>
 #include <iomanip>
 #include <limits>
+#include <ostream>
+#include <sstream>
 
 namespace uhd {
 
@@ -30,22 +30,9 @@ namespace uhd {
  * This gives the fractional seconds enough precision to unambiguously
  * specify a clock-tick/sample-count up to rates of several petahertz.
  */
-class UHD_API time_spec_t {
+class UHD_API time_spec_t
+{
 private:
-    /// Time spec constructor
-    #define time_spec_init(full, frac)                         \
-    {                                                          \
-        const int64_t _full     = int64_t(full);               \
-        const double _frac      = double(frac);                \
-        const int64_t _frac_int = static_cast<int64_t>(_frac); \
-        _full_secs              = _full + _frac_int;           \
-        _frac_secs              = _frac - _frac_int;           \
-        if (_frac_secs < 0) {                                  \
-            _full_secs -= 1;                                   \
-            _frac_secs += 1;                                   \
-        }                                                      \
-    }
-
     /// Helpers
     static constexpr int64_t fast_llround(double x) noexcept
     {
@@ -64,28 +51,29 @@ public:
     /*!
      * Create a time_spec_t with 0 time
      */
-    /*constexpr time_spec_t() noexcept
-    {
-    }*/
+    constexpr time_spec_t() noexcept {}
 
     /*!
-     * Create a time_spec_t from a real-valued seconds count.
-     * \param secs the real-valued seconds count (default = 0)
+     * Create a time_spec_t from whole seconds.
+     * \param full_secs the whole/integer seconds count
      */
-    constexpr time_spec_t(double secs = 0) noexcept
-    {
-        time_spec_init(0, secs);
-    }
+    constexpr time_spec_t(int64_t full_secs) noexcept : _full_secs(full_secs) {}
 
     /*!
      * Create a time_spec_t from whole and fractional seconds.
      * \param full_secs the whole/integer seconds count
      * \param frac_secs the fractional seconds count (default = 0)
      */
-    constexpr time_spec_t(int64_t full_secs, double frac_secs = 0) noexcept
+    constexpr time_spec_t(int64_t full_secs, double frac_secs) noexcept
     {
-        time_spec_init(full_secs, frac_secs);
+        set_from(full_secs, frac_secs);
     }
+
+    /*!
+     * Create a time_spec_t from a real-valued seconds count.
+     * \param secs the real-valued seconds count (default = 0)
+     */
+    constexpr time_spec_t(double secs) noexcept : time_spec_t(0, secs) {}
 
     /*!
      * Create a time_spec_t from whole seconds and fractional ticks.
@@ -94,10 +82,26 @@ public:
      * \param tick_count the fractional seconds tick count
      * \param tick_rate the number of ticks per second
      */
-    constexpr time_spec_t(int64_t full_secs, int64_t tick_count, double tick_rate) noexcept
+    constexpr time_spec_t(
+        int64_t full_secs, int64_t tick_count, double tick_rate) noexcept
+        : time_spec_t(full_secs, tick_count / tick_rate)
     {
-        const double frac_secs = tick_count / tick_rate;
-        time_spec_init(full_secs, frac_secs);
+    }
+
+    /*!
+     * Re-set a time_spec_t from whole and fractional seconds.
+     * \param full_secs the whole/integer seconds count
+     * \param frac_secs the fractional seconds count (default = 0)
+     */
+    constexpr void set_from(int64_t full_secs, double frac_secs) noexcept
+    {
+        const int64_t _frac_int = static_cast<int64_t>(frac_secs);
+        _full_secs              = full_secs + _frac_int;
+        _frac_secs              = frac_secs - _frac_int;
+        if (_frac_secs < 0) {
+            _full_secs -= 1;
+            _frac_secs += 1;
+        }
     }
 
     /*!
@@ -110,10 +114,10 @@ public:
     {
         const int64_t rate_i      = static_cast<int64_t>(tick_rate);
         const double rate_f       = tick_rate - rate_i;
-        const int64_t secs_full   = int64_t(ticks / rate_i);
+        const int64_t secs_full   = static_cast<int64_t>(ticks / rate_i);
         const int64_t ticks_error = ticks - (secs_full * rate_i);
         const double ticks_frac   = ticks_error - secs_full * rate_f;
-        return time_spec_t(secs_full, ticks_frac / tick_rate);
+        return time_spec_t{secs_full, ticks_frac / tick_rate};
     }
 
     /*!
@@ -124,7 +128,7 @@ public:
      */
     constexpr int64_t get_tick_count(double tick_rate) const noexcept
     {
-        return fast_llround(this->get_frac_secs() * tick_rate);
+        return fast_llround(get_frac_secs() * tick_rate);
     }
 
     /*!
@@ -137,9 +141,9 @@ public:
     {
         const int64_t rate_i     = static_cast<int64_t>(tick_rate);
         const double rate_f      = tick_rate - rate_i;
-        const int64_t ticks_full = this->get_full_secs() * rate_i;
-        const double ticks_error = this->get_full_secs() * rate_f;
-        const double ticks_frac  = this->get_frac_secs() * tick_rate;
+        const int64_t ticks_full = get_full_secs() * rate_i;
+        const double ticks_error = get_full_secs() * rate_f;
+        const double ticks_frac  = get_frac_secs() * tick_rate;
         return ticks_full + fast_llround(ticks_error + ticks_frac);
     }
 
@@ -152,7 +156,7 @@ public:
      */
     constexpr double get_real_secs(void) const noexcept
     {
-        return this->get_full_secs() + this->get_frac_secs();
+        return get_full_secs() + get_frac_secs();
     }
 
     /*!
@@ -189,8 +193,8 @@ public:
     }
     time_spec_t& operator+=(const time_spec_t& rhs) noexcept
     {
-        time_spec_init(this->get_full_secs() + rhs.get_full_secs(),
-            this->get_frac_secs() + rhs.get_frac_secs());
+        set_from(
+            get_full_secs() + rhs.get_full_secs(), get_frac_secs() + rhs.get_frac_secs());
         return *this;
     }
     friend constexpr time_spec_t operator+(const time_spec_t& l, const double& r)
@@ -202,8 +206,8 @@ public:
     time_spec_t& operator+=(const double& rhs) noexcept
     {
         double full_secs = std::trunc(rhs);
-        time_spec_init(this->get_full_secs() + static_cast<int64_t>(full_secs),
-            this->get_frac_secs() + (rhs - full_secs));
+        set_from(get_full_secs() + static_cast<int64_t>(full_secs),
+            get_frac_secs() + (rhs - full_secs));
         return *this;
     }
     //! Implement subtractable interface
@@ -214,8 +218,8 @@ public:
     }
     time_spec_t& operator-=(const time_spec_t& rhs) noexcept
     {
-        time_spec_init(this->get_full_secs() - rhs.get_full_secs(),
-            this->get_frac_secs() - rhs.get_frac_secs());
+        set_from(
+            get_full_secs() - rhs.get_full_secs(), get_frac_secs() - rhs.get_frac_secs());
         return *this;
     }
     friend constexpr time_spec_t operator-(const time_spec_t& l, const double& r)
@@ -227,8 +231,8 @@ public:
     time_spec_t& operator-=(const double& rhs) noexcept
     {
         double full_secs = std::trunc(rhs);
-        time_spec_init(this->get_full_secs() - static_cast<int64_t>(full_secs),
-            this->get_frac_secs() - (rhs - full_secs));
+        set_from(get_full_secs() - static_cast<int64_t>(full_secs),
+            get_frac_secs() - (rhs - full_secs));
         return *this;
     }
 
