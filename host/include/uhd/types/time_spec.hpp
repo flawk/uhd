@@ -114,8 +114,8 @@ public:
     {
         const int64_t rate_i      = static_cast<int64_t>(tick_rate);
         const double rate_f       = tick_rate - rate_i;
-        const int64_t secs_full   = static_cast<int64_t>(ticks / rate_i);
-        const int64_t ticks_error = ticks - (secs_full * rate_i);
+        const int64_t secs_full   = ticks / rate_i;
+        const int64_t ticks_error = ticks - secs_full * rate_i;
         const double ticks_frac   = ticks_error - secs_full * rate_f;
         return time_spec_t{secs_full, ticks_frac / tick_rate};
     }
