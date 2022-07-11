@@ -16,6 +16,10 @@ macro(LIBUHD_APPEND_LIBS)
     list(APPEND libuhd_libs ${ARGV})
 endmacro(LIBUHD_APPEND_LIBS)
 
+macro(LIBUHD_APPEND_LIB_DIRS)
+    list(APPEND libuhd_lib_dirs ${ARGV})
+endmacro(LIBUHD_APPEND_LIB_DIRS)
+
 macro(LIBUHD_PYTHON_GEN_SOURCE pyfile outfile)
     #ensure that the directory exists for outfile
     get_filename_component(outfile_dir ${outfile} PATH)
@@ -181,6 +185,7 @@ if(ENABLE_MPMD)
 endif()
 add_library(uhd SHARED ${libuhd_sources})
 target_link_libraries(uhd ${Boost_LIBRARIES} ${libuhd_libs})
+target_link_directories(uhd PUBLIC ${libuhd_lib_dirs})
 if(APPLE)
     target_link_options(uhd PRIVATE "LINKER:-undefined,dynamic_lookup")
     target_link_options(uhd PRIVATE "-flat_namespace")

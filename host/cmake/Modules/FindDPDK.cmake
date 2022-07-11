@@ -9,6 +9,7 @@
 # This module defines
 #  DPDK_INCLUDE_DIRS, where to find rte_config.h and rte_version.h
 #  DPDK_LIBRARIES, the libraries needed by a DPDK user
+#  DPDK_LIBRARY_DIRS, the library directories needed by a DPDK user
 #  DPDK_FOUND, If false, do not try to use DPDK.
 # also defined, but not for general use are
 #  DPDK_LIBRARY, where to find the DPDK library.
@@ -70,6 +71,8 @@ if(DPDK_USER_PROVIDED)
     DPDK_READ_VERSION(DPDK_VERSION ${DPDK_INCLUDE_DIRS})
 else()
     set(DPDK_LIBRARIES ${PC_DPDK_LIBRARIES})
+    #set(DPDK_LIBRARY_DIRS ${PC_DPDK_LIBRARY_DIRS})
+    set(DPDK_LIBRARY_DIRS ${PC_DPDK_LIBDIR})
 
     if(DPDK_LIBRARY)
         list(APPEND DPDK_LIBRARIES ${DPDK_LIBRARY})
@@ -84,6 +87,6 @@ else()
 endif()
 
 find_package_handle_standard_args(DPDK
-    REQUIRED_VARS DPDK_INCLUDE_DIRS DPDK_LIBRARIES
+    REQUIRED_VARS DPDK_INCLUDE_DIRS DPDK_LIBRARIES DPDK_LIBRARY_DIRS
     VERSION_VAR DPDK_VERSION
 )

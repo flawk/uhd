@@ -132,6 +132,7 @@ endif(ENABLE_X300)
 if(ENABLE_DPDK)
     INCLUDE_SUBDIRECTORY(uhd-dpdk)
     include_directories(${DPDK_INCLUDE_DIRS})
+    link_directories(${DPDK_LIBRARY_DIRS})
 
     LIBUHD_APPEND_SOURCES(
         ${CMAKE_CURRENT_SOURCE_DIR}/udp_dpdk_link.cpp
