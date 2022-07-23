@@ -31,15 +31,15 @@ BOOST_FIXTURE_TEST_CASE(x400_radio_test_graph, x400_radio_fixture)
 {
     detail::graph_t graph{};
     detail::graph_t::graph_edge_t edge_port_info0;
-    edge_port_info0.src_port                    = 0;
-    edge_port_info0.dst_port                    = 0;
-    edge_port_info0.property_propagation_active = true;
-    edge_port_info0.edge                        = detail::graph_t::graph_edge_t::DYNAMIC;
+    edge_port_info0.src_port        = 0;
+    edge_port_info0.dst_port        = 0;
+    edge_port_info0.is_forward_edge = true;
+    edge_port_info0.edge            = detail::graph_t::graph_edge_t::DYNAMIC;
     detail::graph_t::graph_edge_t edge_port_info1;
-    edge_port_info1.src_port                    = 1;
-    edge_port_info1.dst_port                    = 1;
-    edge_port_info1.property_propagation_active = true;
-    edge_port_info1.edge                        = detail::graph_t::graph_edge_t::DYNAMIC;
+    edge_port_info1.src_port        = 1;
+    edge_port_info1.dst_port        = 1;
+    edge_port_info1.is_forward_edge = true;
+    edge_port_info1.edge            = detail::graph_t::graph_edge_t::DYNAMIC;
 
     mock_radio_node_t mock_radio_block{0};
     mock_terminator_t mock_sink_term(2, {}, "MOCK_SINK");
@@ -69,21 +69,21 @@ BOOST_FIXTURE_TEST_CASE(x400_radio_test_graph, x400_radio_fixture)
 /******************************************************************************
  * RFNoC atomic item size property test
  *
- * This test case ensures that the radio block propagates atomic item size correct
+ * This test case ensures that the radio block propagates atomic item size correctly
  *****************************************************************************/
 BOOST_FIXTURE_TEST_CASE(x400_radio_test_prop_prop, x400_radio_fixture)
 {
     detail::graph_t graph{};
     detail::graph_t::graph_edge_t edge_port_info0;
-    edge_port_info0.src_port                    = 0;
-    edge_port_info0.dst_port                    = 0;
-    edge_port_info0.property_propagation_active = true;
-    edge_port_info0.edge                        = detail::graph_t::graph_edge_t::DYNAMIC;
+    edge_port_info0.src_port        = 0;
+    edge_port_info0.dst_port        = 0;
+    edge_port_info0.is_forward_edge = true;
+    edge_port_info0.edge            = detail::graph_t::graph_edge_t::DYNAMIC;
     detail::graph_t::graph_edge_t edge_port_info1;
-    edge_port_info1.src_port                    = 1;
-    edge_port_info1.dst_port                    = 1;
-    edge_port_info1.property_propagation_active = true;
-    edge_port_info1.edge                        = detail::graph_t::graph_edge_t::DYNAMIC;
+    edge_port_info1.src_port        = 1;
+    edge_port_info1.dst_port        = 1;
+    edge_port_info1.is_forward_edge = true;
+    edge_port_info1.edge            = detail::graph_t::graph_edge_t::DYNAMIC;
 
     mock_terminator_t mock_sink_term(2, {}, "MOCK_SINK");
     mock_terminator_t mock_source_term(2, {}, "MOCK_SOURCE");
@@ -166,20 +166,36 @@ BOOST_FIXTURE_TEST_CASE(x400_radio_test_prop_prop, x400_radio_fixture)
     BOOST_CHECK_EQUAL(mock_sink_term.get_edge_property<size_t>(
                           "atomic_item_size", {res_source_info::INPUT_EDGE, 0}),
         28);
+    BOOST_CHECK_EQUAL(test_radio->get_property<int>("spp", 0) % 7, 0);
 
     mock_sink_term.set_edge_property<size_t>(
         "atomic_item_size", 22, {res_source_info::INPUT_EDGE, 1});
     BOOST_CHECK_EQUAL(mock_sink_term.get_edge_property<size_t>(
                           "atomic_item_size", {res_source_info::INPUT_EDGE, 1}),
         44);
+    BOOST_CHECK_EQUAL(test_radio->get_property<int>("spp", 1) % 11, 0);
 
     mock_sink_term.set_edge_property<size_t>(
         "mtu", 179, {res_source_info::INPUT_EDGE, 0});
     mock_sink_term.set_edge_property<size_t>(
-        "atomic_item_size", 47, {res_source_info::INPUT_EDGE, 0});
+        "atomic_item_size", 46, {res_source_info::INPUT_EDGE, 0});
     BOOST_CHECK_EQUAL(mock_sink_term.get_edge_property<size_t>(
                           "atomic_item_size", {res_source_info::INPUT_EDGE, 0}),
-        176);
+        92);
+    BOOST_CHECK_EQUAL(test_radio->get_property<int>("spp", 0), 23);
+
+    test_radio->set_property<int>("spp", 3, 0);
+    BOOST_CHECK_EQUAL(test_radio->get_property<int>("spp", 0), 23);
+    test_radio->set_property<int>("spp", 24, 0);
+    BOOST_CHECK_EQUAL(test_radio->get_property<int>("spp", 0), 23);
+
+    // If we go higher, then there's no valid spp value that is both smaller than
+    // MTU *and* a multiple of AIS
+    UHD_LOG_INFO("TEST", "Expecting ERROR here VVV");
+    BOOST_REQUIRE_THROW(mock_sink_term.set_edge_property<size_t>(
+                            "atomic_item_size", 47, {res_source_info::INPUT_EDGE, 0}),
+        uhd::resolve_error);
+    UHD_LOG_INFO("TEST", "Expecting ERROR here ^^^");
 }
 
 BOOST_FIXTURE_TEST_CASE(zbx_api_freq_tx_test, x400_radio_fixture)

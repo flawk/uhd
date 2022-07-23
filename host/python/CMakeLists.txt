@@ -9,9 +9,9 @@
 ########################################################################
 
 PYTHON_CHECK_MODULE(
-    "virtualenv"
+    "virtual environment"
     "sys"
-    "hasattr(sys, 'real_prefix')"
+    "sys.prefix != sys.base_prefix"
     HAVE_PYTHON_VIRTUALENV
 )
 
@@ -130,6 +130,7 @@ if(ENABLE_SIM)
                        ${CMAKE_CURRENT_BINARY_DIR}/usrp_mpm/xports
 
                        COMMAND ${CMAKE_COMMAND} -E copy
+                       ${CMAKE_CURRENT_BINARY_DIR}/simulator/usrp_mpm/compat_num.py
                        ${CMAKE_CURRENT_BINARY_DIR}/simulator/usrp_mpm/discovery.py
                        ${CMAKE_CURRENT_BINARY_DIR}/simulator/usrp_mpm/eeprom.py
                        ${CMAKE_CURRENT_BINARY_DIR}/simulator/usrp_mpm/ethdispatch.py
@@ -156,6 +157,7 @@ add_custom_command(OUTPUT ${TIMESTAMP_FILE}
 
 add_custom_target(pyuhd_library ALL DEPENDS ${TIMESTAMP_FILE} pyuhd)
 if(HAVE_PYTHON_VIRTUALENV)
+    message(STATUS "python virtual environment detected.")
     # In virtualenvs, let setuptools do its thing
     install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} -q install --force)")
 else()

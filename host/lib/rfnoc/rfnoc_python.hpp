@@ -132,7 +132,7 @@ void export_rfnoc(py::module& m)
         .def_readwrite("dst_port", &graph_edge_t::dst_port)
         .def_readwrite("edge", &graph_edge_t::edge)
         .def_readwrite(
-            "property_propagation_active", &graph_edge_t::property_propagation_active)
+            "is_forward_edge", &graph_edge_t::is_forward_edge)
 
         // Methods
         .def("__str__", &graph_edge_t::to_string)
@@ -183,7 +183,12 @@ void export_rfnoc(py::module& m)
         .def("is_connectable", &rfnoc_graph::is_connectable)
         .def("connect",
             py::overload_cast<const block_id_t&, size_t, const block_id_t&, size_t, bool>(
-                &rfnoc_graph::connect))
+                &rfnoc_graph::connect),
+            py::arg("src_blk"),
+            py::arg("src_port"),
+            py::arg("dst_blk"),
+            py::arg("dst_port"),
+            py::arg("is_back_edge") = false)
         .def("connect",
             py::overload_cast<uhd::tx_streamer::sptr,
                 size_t,

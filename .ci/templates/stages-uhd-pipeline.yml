@@ -76,7 +76,7 @@ resources:
     type: github
     name: EttusResearch/gr-ettusdev
     endpoint: EttusResearch
-    ref: maint-3.8-uhd4.0
+    ref: master
   - repository: ettus-rts
     type: github
     endpoint: EttusResearch
@@ -114,6 +114,10 @@ stages:
   - template: job-uhd-build-src.yml
     parameters:
       toolset: msbuild
+      release_binaries: ${{ parameters.release_binaries }}
+  - template: job-uhd-build-src.yml
+    parameters:
+      toolset: msbuild_python
       release_binaries: ${{ parameters.release_binaries }}
 
 - stage: build_uhd_stage_mac
@@ -220,23 +224,42 @@ stages:
       parameters:
         toolset: msbuild
         installer: nsis
+        releaseBinaries: ${{ parameters.release_binaries }}
+    - template: job-uhd-build-installer.yml
+      parameters:
+        toolset: msbuild_python
+        installer: nsis
     - ${{ if parameters.release_binaries }}:
       - template: job-uhd-build-installer-signing.yml
         parameters:
           toolset: msbuild
           installer: nsis
 
-- stage: test_uhd_stage
-  displayName: Test UHD
-  dependsOn: build_uhd_stage_linux
+- stage: devtest_uhd_x3xx_b2xx_stage
+  displayName: devtest UHD x3xx b2xx
+  dependsOn:
+  - build_uhd_stage_linux
   jobs:
   - template: job-uhd-devtest-rhombus.yml
     parameters:
       testOS: ubuntu2004
       uhdSrcDir: $(Build.SourcesDirectory)
+      testDevices: 'x3xx,b2xx'
 
-- stage: test_uhd_embedded_devices_stage
-  displayName: Test UHD Embedded Devices
+- stage: devtest_uhd_n3xx_e320_stage
+  displayName: devtest UHD n3xx e320
+  dependsOn:
+  - build_uhd_stage_linux
+  - build_uhd_embedded_system_images
+  jobs:
+  - template: job-uhd-devtest-rhombus.yml
+    parameters:
+      testOS: ubuntu2004
+      uhdSrcDir: $(Build.SourcesDirectory)
+      testDevices: 'n3xx,e320'
+
+- stage: test_uhd_x4xx_stage
+  displayName: Test UHD x4xx
   dependsOn:
   - build_uhd_stage_linux
   - build_uhd_embedded_system_images
@@ -248,6 +271,19 @@ stages:
   - template: tests/job-uhd-x4xx-hardware-tests-pebbles.yml
     parameters:
       testOS: ubuntu1804
+
+- stage: test_uhd_rf_test_stage
+  displayName: Run rf tests n3xx
+  dependsOn:
+  - build_uhd_stage_linux
+  - build_uhd_embedded_system_images
+  - build_gnuradio_stage_linux
+  jobs:
+  - template: job-uhd-rf-tests-pebbles.yml
+    parameters:
+      uhdSrcDir: $(Build.SourcesDirectory)/uhddev
+      testOS: ubuntu1804
+      testDevices: 'n3xx'
 
 - stage: test_streaming_stage
   displayName: Test UHD Streaming
