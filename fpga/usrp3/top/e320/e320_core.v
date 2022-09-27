@@ -26,6 +26,7 @@ module e320_core #(
   parameter FP_GPIO_WIDTH = 8,  // Front panel GPIO width
   parameter DB_GPIO_WIDTH = 16,  // Daughterboard GPIO width
   parameter CHDR_W = 64,
+  parameter BYTE_MTU = $clog2(8192),
   parameter RFNOC_PROTOVER  = {8'd1, 8'd0}
 )(
   // Clocks and resets
@@ -192,7 +193,7 @@ module e320_core #(
   /////////////////////////////////////////////////////////////////////////////////
 
   localparam [15:0] COMPAT_MAJOR = 16'd6;
-  localparam [15:0] COMPAT_MINOR = 16'd0;
+  localparam [15:0] COMPAT_MINOR = 16'd1;
 
   /////////////////////////////////////////////////////////////////////////////////
 
@@ -1029,6 +1030,7 @@ module e320_core #(
 
   rfnoc_image_core #(
     .CHDR_W   (CHDR_W),
+    .MTU      (BYTE_MTU - $clog2(CHDR_W/8)),
     .PROTOVER (RFNOC_PROTOVER)
   ) rfnoc_sandbox_i (
     .chdr_aclk               (bus_clk    ),

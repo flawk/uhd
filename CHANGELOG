@@ -1,6 +1,233 @@
 Change Log for Releases
 ==============================
 
+## 004.003.000.000
+* ci
+  - Add n310 rf tests to monopipeline
+  - Add XQ testing to n321
+  - Mark SucceededWithIssues as failure
+  - Remove Fedora 34 and add Fedora 36
+  - set required capability for windows builds
+  - Workaround Ubuntu 18.04 systemd bug 1988563
+* docs
+  - Add known issue for Xilinx AR 76681
+  - Clarify live install and remove version
+* examples
+  - Enable radio loopback for a single radio
+  - rx_samples_c: Use error_code instead of return_code
+* experts
+  - Move expert framework into public API
+* extension
+  - Add extension example
+  - Add extension framework
+  - Add Extension Framework documentation
+* features
+  - Make all feature headers install
+* fpga
+  - ci: Upgrade to Vivado 2021.1
+  - docs: Upgrade to Vivado 2021.1
+  - e31x: Add PROTOVER to eth_internal
+  - e31x: Cleanup MTU parameters
+  - e31x: Fix IP dependencies
+  - e31x: Upgrade to Vivado 2021.1
+  - e320: Bump FPGA compat to 6.1
+  - e320: Cleanup MTU parameters
+  - e320: Support advanced transport adapter
+  - e320: Upgrade to Vivado 2021.1
+  - Fix target dependencies in Makefile.xxx.inc
+  - Fix Vivado version check in viv_hardware_utils
+  - lib: Add advanced features to IPv4 SV transport adapter
+  - lib: Add chdr_strip_header module
+  - lib: Add compat to Verilog transport adapter
+  - lib: Add eth_ipv4_interface_tb
+  - lib: Add MTU parameter to eth_internal
+  - lib: Add NET_CHDR_W parameter to transport adapters
+  - lib: Add RegPort SystemVerilog interface
+  - lib: Add support for length in tuser in eth_ipv4_add_udp
+  - lib: Add verilog-compatible wrapper for eth_ipv4_interface
+  - lib: Fix addsub_hls
+  - lib: Fix NODE_INST parameter in eth_internal
+  - lib: Upgrade to Vivado 2021.1
+  - n3xx: Add BUFG to SPI output line to ease timing
+  - n3xx: Add PROTOVER to n3xx_mgt_wrapper
+  - n3xx: Bump FPGA compat to 8.1
+  - n3xx: Cleanup MTU parameters
+  - n3xx: Fix async clocks relationship
+  - n3xx: Remove unused USE_REPLAY parameter
+  - n3xx: Support advanced transport adapter
+  - n3xx: Upgrade to Vivado 2021.1
+  - sim: Support unused tkeep in AxiStreamPacket::dump_bytes()
+  - sim: Update struct enum initialization
+  - sim: Workaround Vivado bug in ChdrIfaceBfm_tb
+  - tools: Add utility to upgrade TCL-based BD
+  - tools: Allow IP renaming with viv_ip_xci_editor.py
+  - tools: Fix HLS IP builder for Vivado 2021.1
+  - tools: Lattice build flow clean-up
+  - Update makefiles to allow parallel FPGA builds
+  - Use AR76780 patch for fir_compiler
+  - x300: Cleanup MTU parameters
+  - x300: Upgrade to Vivado 2021.1
+  - x400: Bump FPGA compat to 7.9
+  - x400: Fix link status detection of 10 GbE IP
+  - x400: Fix NODE_INST for transport adapters
+  - x400: Fix transport adapter PROTOVER
+  - x400: Upgrade to Vivado 2021.1
+  - x400: zbx: Revision Bump
+  - zbx: Update HTML regmap
+* host
+  - if monotonic don't run monotonic algo
+* images
+  - Update filesystem images to point to 4.3.0.0-rc2
+  - update fpgas for vivado 2021.1 upgrade
+  - update manifest for raw udp streaming
+  - installer: update ubuntu uhd library verison
+* mpm
+  - bump fpga compat for raw udp streaming
+  - bump x4xx fpga compat
+* MPMD:
+  - Limit 1GbE MTU discovery to 1500
+* python
+  - Fix error from pybind11 2.10 update
+  - update to pybind11 for Python 3.11
+* rfnoc
+  - Mutex graph on set_property
+* tests
+  - Setup isolated processors to use performance governor
+* tune_map
+  - Publish and simplify zbx_tune_map
+* uhd
+  - multi_usrp.cpp remove commented out code
+  - Revert Raw UDP Host Changes
+  - update to uniform SPDX license identifier
+
+## 004.002.000.001
+* cal
+  - add method to get the current power cal tracking mode
+* ci
+  - Add b210 hardware to rhombus
+  - add devtest e320 support
+  - Add devtests to hardware-test-dev
+  - Add fedora rpm installer build
+  - Add n310 into devtests
+  - Add n321 to devtest
+  - Add new x3xx hardware to rhombus
+  - Add package builder container entry
+  - Add package source support to pipelines
+  - Add recv and send frame tuning for streaming
+  - Add Windows installer signing
+  - Build init_usrp example for macOS
+  - Build init_usrp example for Windows
+  - call powerbtn multiple times to power on
+  - change gr-ettus ref to master
+  - devtests: fix knownhost entry
+  - Enable root privileges for non-DPDK streaming tests
+  - Fix mgmt_addr=None entry for X310 DPDK case
+  - Increase devtest job timeout to 90 minutes
+  - Make Windows installer job self-contained
+  - Mark devtest as failure on SucceededWithIssues
+  - Only include rpm files in the Fedora installer artifacts
+  - Point meta-ettus repo ref to v4.2.0.0
+  - Run multiple fpgas per job
+  - set benchmark rate priority to high
+  - set meta-ettus-dev repo to zeus-ci
+  - Set n310 and n321 to specific agents
+  - streaming: flash x310 fpga
+  - Update branches to UHD-4.2
+* cmake
+  - Add support for fedora rpm versioning
+  - Cache UHD_VERSION in all cases
+  - Drop .deb generation via cpack in favour of better tools
+* debian
+  - Change jellyfish to jammy
+  - Remove hirsute; add jellyfish support
+  - Resolve lintian issues
+* doc
+  - Fix generation of man pages
+  - Remove ZBX phase sync documentation
+* docs
+  - DPDK Linux kernel underruns solution
+  - Update section on radio transport protocols
+* e3xx
+  - change radio_control_impl mutex to be a recursive_mutex
+* examples
+  - Fix rfnoc_replay_samples_from_file
+  - gpio: output before end of stream
+  - gpio: Refactor example
+* fpga
+  - Add READMEs describing Lattice and ADI IP sourcing
+  - Fix first arg in calls to $fatal()
+  - lib: Add read-only strategy for port B in 2-port RAM
+  - lib: Update error call for undefined RW mode
+  - rfnoc: Remove rfnoc_version from target YAML
+  - x400: Fix AXI/LBUS testbench names
+  - x400: zbx: Add support for XO3 CPLD variant.
+* host/README.md
+  - Fix links to knowledge base
+* images
+  - Update manifest with latest cpld firmware
+* lib
+  - Add missing include to offload_io_service_client.hpp
+  - Remove stray file async_msg.hpp
+* mpm
+  - add support for lattice zbx cpld
+  - Factor out transport API into PeriphManagerBase
+  - Fix expected CPLD filename for x4xx
+  - udp: Fix Pylint warnings in UDP-related files
+  - x4xx: Make get_chdr_link_types() more generic
+  - xportmgr_udp: Include iface name in info
+* n310
+  - Improve LO source control options for ALL and LO2 cases
+* n320
+  - Fix reading DB serial in applying corrections
+  - Improve comments regarding low band
+  - Revert PLL lock time reduction
+* python
+  - Check rfnoc_version in rfnoc_image_builder
+  - cmake: Detect python virtual environments
+* rfnoc
+  - Add atomic_item_size property to FFT block
+  - Add LUA based dissector
+  - fix double conversions
+  - Fix register_xport_hop_cfg_fns() usage
+  - Fix vector use in replay_block_control_impl
+  - Fix warnings in replay_block_control
+  - Improve comments regarding streaming and mgmt. code
+  - Improve documentation for chdr_ctrl_endpoint
+* tests
+  - mark test jobs as an overall failure if there is a test failure
+  - Remove packet_handler_benchmark
+  - streaming: add option to run streaming tests in dev pipeline
+  - streaming: add support for B210 DUTs
+  - streaming: add support for more DUTs
+  - streaming: don't set master clock rate on x310
+  - streaming: fix x310 test case values
+  - streaming: include dual_SFP parameter for all cases
+  - streaming: mark non-dpdk failures as xfails
+  - streaming: pass the correct LD_LIBRARY_PATH to pytest
+  - streaming: select appropriate uhd config file before test runs
+  - streaming: temporarily mark b210 dropped samples as an xfail
+  - streaming: use assert instead of pytest.fail for underruns/overruns
+* tools
+  - package_source remove double bracket
+* uhd
+  - change default into option flag in register definition
+  - Enable branch naming on Azure Pipelines
+  - fix minor typo when querying tx sensors property tree
+  - refactor get_all_addrs to remove duplicates
+* usrp2
+  - Remove unused code segments
+* utils
+  - Remove usrp_e3x0_network_mode
+  - uhd_images_downloader: Increase default image download size limit
+  - uhd_images_downloader: Print name of file that exceeds limit
+  - uhd_usrp_probe: Add DB rev to output
+  - x300_reset: Make py3k-ready
+* x300
+  - Change order of GPIO banks
+  - Fix invalid GPIO source bank error message
+* zbx
+  - Remove stray include
+
 ## 004.002.000.000
 * b200
   - Re-sync times
