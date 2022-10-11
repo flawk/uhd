@@ -1,48 +1,75 @@
 //
-// Copyright 2020 Ettus Research, A National Instruments Brand
+// Copyright 2020 Ettus Research, a National Instruments Brand
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 //
 // Module: eth_ipv4_chdr_adapter
-// Description: A generic transport adapter module that can be used in
-//   a variety of transports. It does the following:
-//   - Exposes a configuration port for mgmt packets to configure the node
-//   - Implements a return-address map for packets with metadata other than
-//     the CHDR. Additional metadata can be passed as a tuser to this module
-//     which will store it in a map indexed by the SrcEPID in a management
-//     packet. For all returning packets, the metadata will be looked up in
-//     the map and attached as the outgoing tuser.
-//   - Implements a loopback path for node-info discovery
+//
+// Description:
+//
+//   An Eth+IP+UDP transport adapter for RFNoC. In the RFNoC-to-Eth direction,
+//   this module encapsulates CHDR packets (or just the CHDR packet's payload)
+//   inside UDP/IP/Eth packets to be sent onto the network. In the other
+//   direction, this module looks at the UDP port in the packet to determine if
+//   it's a CHDR packet destined for RFNoC or a packet destined for the CPU,
+//   then routes the packet accordingly. If it's destined for RFNoC, the
+//   Eth/UDP/IP headers are stripped off.
+//
+//   Traffic to/from the CPU can only go from/to the Eth interface. Traffic
+//   to/from RFNoC can only go from/to the Eth interface. There's no path
+//   between the CPU and RFNoC.
+//
+//                               (CPU)
+//                              e2c c2e
+//                               ▲   │
+//                               │   │
+//                               │   ▼
+//                           ┌───┼───┼───┐
+//                           │   │   │   |
+//               eth_tx ◄────┼───┼───█───┼◄──── v2e
+//   (UDP/IP/Eth)            │   │       │         (RFNoC CHDR)
+//               eth_rx ────►┼───█───────┼────► e2v
+//                           |           |
+//                           └───────────┘
+//                         Transport Adapter
 //
 // Parameters:
-//   - PROTOVER: RFNoC protocol version {8'd<major>, 8'd<minor>}
-//   - CPU_FIFO_SIZE: Log2 of the FIFO depth (in bytes) for the CPU egress path
-//   - CHDR_FIFO_SIZE: Log2 of the FIFO depth (in bytes) for the CHDR egress path
-//   - RT_TBL_SIZE: Log2 of the depth of the return-address routing table
-//   - NODE_INST: The node type to return for a node-info discovery
-//   - DROP_UNKNOWN_MAC: Drop packets not addressed to us?
-//   - DROP_MIN_PACKET: Drop packets smaller than 64 bytes?
-//   - PREAMBLE_BYTES: Number of bytes of Preamble expected
-//   - ADD_SOF: Add a SOF indication into the tuser field of the e2c path.
-//              If false use TKEEP instead of USER.
-//   - SYNC: Set if the CPU clock domain (c2e, e2c) is not the same as the
-//           Ethernet clock domain (eth_rx, eth_tx).
-//   - ENET_W: Width of the link to the Ethernet MAC
-//   - CPU_W: Width of the CPU interface
-//   - CHDR_W: Width of the CHDR interface
+//
+//   PROTOVER         : RFNoC protocol version {8'd<major>, 8'd<minor>}
+//   CPU_FIFO_SIZE    : Log2 of the FIFO depth (in bytes) for the CPU egress path
+//   CHDR_FIFO_SIZE   : Log2 of the FIFO depth (in bytes) for the CHDR egress path
+//   RT_TBL_SIZE      : Log2 of the depth of the return-address routing table
+//   NODE_INST        : The node type to return for a node-info discovery
+//   DROP_UNKNOWN_MAC : Drop packets not addressed to us?
+//   DROP_MIN_PACKET  : Drop packets smaller than 64 bytes?
+//   PREAMBLE_BYTES   : Number of bytes of Preamble expected
+//   ADD_SOF          : Add a SOF indication into the tuser field of the e2c
+//                      path. If false use TKEEP instead of USER.
+//   SYNC             : Set to 1 if the c2e/e2c, v2e/e2v, and eth_rx/eth_tx are
+//                      synchronous to each other. Set to 0 to insert clock
+//                      crossing logic.
+//   ENET_W           : Width of the link to the Ethernet MAC
+//   CPU_W            : Width of the CPU interface
+//   CHDR_W           : CHDR width used by RFNoC on the FPGA
+//   NET_CHDR_W       : CHDR width used over the network connection
+//   EN_RX_RAW_PAYD   : Enable CHDR header removal (raw payload) on v2e path
 //
 // Signals:
-//   - device_id : The ID of the device that has instantiated this module
-//   - eth_rx : The input Ethernet stream from the MAC
-//   - eth_tx : The output Ethernet stream to the MAC
-//   - v2e : The input CHDR stream from the rfnoc infrastructure
-//   - e2v : The output CHDR stream to the rfnoc infrastructure
-//   - c2e : The input Ethernet stream from the CPU
-//   - e2c : The output Ethernet stream to the CPU
-//   - my_mac: The Ethernet (MAC) address of this endpoint
-//   - my_ip: The IPv4 address of this endpoint
-//   - my_udp_chdr_port: The UDP port allocated for CHDR traffic on this endpoint
 //
+//   device_id        : The ID of the device that has instantiated this module
+//   eth_rx           : The input Ethernet stream from the MAC
+//   eth_tx           : The output Ethernet stream to the MAC
+//   v2e              : The input CHDR stream from the rfnoc infrastructure
+//   e2v              : The output CHDR stream to the rfnoc infrastructure
+//   c2e              : The input Ethernet stream from the CPU
+//   e2c              : The output Ethernet stream to the CPU
+//   my_mac           : The Ethernet (MAC) address of this endpoint
+//   my_ip            : The IPv4 address of this endpoint
+//   my_udp_chdr_port : The UDP port allocated for CHDR traffic on this endpoint
+//
+
+`default_nettype none
+
 
 module eth_ipv4_chdr_adapter #(
   logic [15:0] PROTOVER         = {8'd1, 8'd0},
@@ -57,18 +84,31 @@ module eth_ipv4_chdr_adapter #(
   bit          SYNC             = 0,
   int          ENET_W           = 64,
   int          CPU_W            = 64,
-  int          CHDR_W           = 64
+  int          CHDR_W           = 64,
+  int          NET_CHDR_W       = CHDR_W,
+  bit          EN_RX_RAW_PYLD   = 1
 )(
 
   // Device info
-  input  logic [15:0] device_id,
-  // Device addresses
-  input  logic [47:0] my_mac,
-  input  logic [31:0] my_ip,
-  input  logic [15:0] my_udp_chdr_port,
-  input  logic [15:0] my_pause_set,
-  input  logic [15:0] my_pause_clear,
+  input  wire  [15:0] device_id,
 
+  // Device addresses
+  input  wire  [47:0] my_mac,
+  input  wire  [31:0] my_ip,
+  input  wire  [15:0] my_udp_chdr_port,
+  input  wire  [15:0] my_pause_set,
+  input  wire  [15:0] my_pause_clear,
+
+  // Key-value map interface
+  input  wire         kv_stb,
+  output wire         kv_busy,
+  input  wire  [47:0] kv_mac_addr,
+  input  wire  [31:0] kv_ip_addr,
+  input  wire  [15:0] kv_udp_port,
+  input  wire  [15:0] kv_dst_epid,
+  input  wire         kv_raw_udp,
+
+  // Dropped packet debug values
   output logic        chdr_dropped,
   output logic        cpu_dropped,
 
@@ -80,7 +120,7 @@ module eth_ipv4_chdr_adapter #(
   // CHDR router interface (eth_rx.clk)
   AxiStreamIf.master e2v, // tUser = {*not used*};
   AxiStreamIf.slave  v2e, // tUser = {*not used*};
-  
+
   // CPU DMA
   // (domain: e2c.clk if SYNC=0, else eth_rx.clk)
   AxiStreamIf.master e2c, // tUser = {sof,trailing bytes};
@@ -137,13 +177,13 @@ module eth_ipv4_chdr_adapter #(
   // Ethernet sink. Inspects packet and dispatches
   // to the correct port.
   eth_ipv4_chdr_dispatch #(
-    .CPU_FIFO_SIZE(CPU_FIFO_SIZE),
-    .CHDR_FIFO_SIZE(CHDR_FIFO_SIZE),
-    .PREAMBLE_BYTES(PREAMBLE_BYTES),
-    .MAX_PACKET_BYTES(MAX_PACKET_BYTES),
-    .DROP_UNKNOWN_MAC(DROP_UNKNOWN_MAC),
-    .DROP_MIN_PACKET(DROP_MIN_PACKET),
-    .ENET_W(ENET_W)
+    .CPU_FIFO_SIZE    (CPU_FIFO_SIZE),
+    .CHDR_FIFO_SIZE   (CHDR_FIFO_SIZE),
+    .PREAMBLE_BYTES   (PREAMBLE_BYTES),
+    .MAX_PACKET_BYTES (MAX_PACKET_BYTES),
+    .DROP_UNKNOWN_MAC (DROP_UNKNOWN_MAC),
+    .DROP_MIN_PACKET  (DROP_MIN_PACKET),
+    .ENET_W           (ENET_W)
   ) eth_dispatch_i (
     .eth_pause_req    (eth_pause_req),
     .eth_rx           (eth_rx1),
@@ -227,23 +267,30 @@ module eth_ipv4_chdr_adapter #(
     v2e3(eth_rx.clk,eth_rx.rst);
 
   chdr_xport_adapter #(
-    .PREAMBLE_BYTES   (PREAMBLE_BYTES),
-    .MAX_PACKET_BYTES (MAX_PACKET_BYTES),
-    .PROTOVER     (PROTOVER),
-    .TBL_SIZE     (RT_TBL_SIZE),
-    .NODE_INST    (NODE_INST),
-    .ALLOW_DISC   (1)
-  ) xport_adapter_gen_i (
-    .device_id           (device_id),
-    .my_mac              (my_mac),
-    .my_ip               (my_ip),
-    .my_udp_chdr_port    (my_udp_chdr_port),
-
-    .eth_rx     (e2v2), // from ethernet
-    .e2v        (e2v3), // to   CHDR
-    // optional loop from ethernet to ethernet to talk to node
-    .v2e        (v2e),  // from CHDR
-    .eth_tx     (v2e1D)  // to   ethernet
+    .PREAMBLE_BYTES  (PREAMBLE_BYTES  ),
+    .MAX_PACKET_BYTES(MAX_PACKET_BYTES),
+    .PROTOVER        (PROTOVER        ),
+    .TBL_SIZE        (RT_TBL_SIZE     ),
+    .NODE_INST       (NODE_INST       ),
+    .ALLOW_DISC      (1               ),
+    .NET_CHDR_W      (NET_CHDR_W      ),
+    .EN_RX_RAW_PYLD  (EN_RX_RAW_PYLD  )
+  ) chdr_xport_adapter_i (
+    .device_id       (device_id       ),
+    .my_mac          (my_mac          ),
+    .my_ip           (my_ip           ),
+    .my_udp_chdr_port(my_udp_chdr_port),
+    .kv_stb          (kv_stb          ),
+    .kv_busy         (kv_busy         ),
+    .kv_dst_epid     (kv_dst_epid     ),
+    .kv_data         ({kv_raw_udp,
+                       kv_udp_port,
+                       kv_ip_addr,
+                       kv_mac_addr   }),
+    .eth_rx          (e2v2            ), // from Ethernet
+    .e2v             (e2v3            ), // to   CHDR
+    .v2e             (v2e             ), // from CHDR
+    .eth_tx          (v2e1D           )  // to   Ethernet
   );
 
   if (DEBUG) begin
@@ -317,7 +364,7 @@ module eth_ipv4_chdr_adapter #(
 
     if (ENET_W > CPU_W || !SYNC) begin : gen_c2e_packet_gate
       // Adding so packet will be contiguous going out
-      // I think the MAC needs bandwdith feeding it to
+      // I think the MAC needs bandwidth feeding it to
       // be greater than the line rate
       axi4s_packet_gate #(.SIZE(17-$clog2(ENET_W)), .USE_AS_BUFF(0))
        c2e_gate_i (.clear(1'b0),.error(1'b0),.i(c2e1_0),.o(c2e1));
@@ -492,4 +539,7 @@ module eth_ipv4_chdr_adapter #(
   );
 
 
-endmodule // eth_ipv4_chdr_adapter
+endmodule : eth_ipv4_chdr_adapter
+
+
+`default_nettype wire
